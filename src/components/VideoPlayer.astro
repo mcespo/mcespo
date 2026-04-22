@@ -1,0 +1,59 @@
+---
+/**
+ * VideoPlayer — native <video> with a caption.
+ *
+ * Preloads only metadata (poster + duration) — the full file is
+ * fetched only when the user presses play.
+ *
+ * Usage in .mdx:
+ *   import VideoPlayer from '../../components/VideoPlayer.astro'
+ *   <VideoPlayer src="/video/demo.mp4" poster="/video/demo-poster.jpg" caption="App walkthrough, 90s." />
+ */
+
+interface Props {
+  /** Path or URL to the video file */
+  src: string;
+  /** Path or URL to a poster image shown before play */
+  poster?: string;
+  /** Caption shown below the player */
+  caption?: string;
+  /** CSS aspect-ratio — defaults to "16/9" */
+  ratio?: string;
+  /** Mutes and autoplays the video (useful for silent loops / demos) */
+  autoplay?: boolean;
+  /** Loops the video — combine with autoplay for ambient clips */
+  loop?: boolean;
+}
+
+const {
+  src,
+  poster,
+  caption,
+  ratio = '16/9',
+  autoplay = false,
+  loop = false,
+} = Astro.props;
+---
+
+<figure class="my-10">
+  <video
+    {src}
+    {poster}
+    controls
+    playsinline
+    preload="metadata"
+    autoplay={autoplay || undefined}
+    loop={loop || undefined}
+    muted={autoplay || undefined}
+    class="w-full border border-ink-3"
+    style={`aspect-ratio: ${ratio}`}
+  >
+    Your browser doesn't support HTML video.
+    <a href={src}>Download the video</a> instead.
+  </video>
+  {caption && (
+    <figcaption class="mt-[0.625rem] font-mono text-[0.6875rem] tracking-[0.04em] text-ink-2">
+      {caption}
+    </figcaption>
+  )}
+</figure>

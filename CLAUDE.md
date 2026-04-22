@@ -67,6 +67,146 @@ When adding a new color:
 
 ---
 
+## Astro best practices
+
+### General
+- **Components for anything used twice.** If a pattern appears on more than one page, extract it.
+- **Layouts for page shells.** `BaseLayout.astro` is the only HTML document shell — never write a second `<!doctype html>`.
+- **Props are always typed** with a `interface Props {}` block at the top of the frontmatter.
+- **No `client:*` directives** unless a component genuinely needs browser APIs or reactive state. When JS is needed, prefer Alpine (see Standards → JavaScript below).
+- **`set:html` only for trusted content** — never for user-supplied strings.
+- Prefer `<slot />` over prop-threading for content composition.
+
+### Images
+Use `<Image>` from `astro:assets` for any image that lives in the repo (`src/assets/`). It produces WebP, infers dimensions (prevents layout shift), and lazy-loads by default.
+
+```astro
+---
+import { Image } from 'astro:assets';
+import myPhoto from '../assets/photo.jpg';
+---
+<Image src={myPhoto} alt="Studio corner, overcast afternoon." />
+```
+
+For images embedded in blog posts, use the `Plate` component (adds a frame + caption) or plain Markdown image syntax for inline images. Remote images (hotlinked) use a regular `<img>` — add the domain to `image.domains` in `astro.config.mjs` if Astro complains.
+
+### Content collections
+- Config: `src/content.config.ts` (Astro v5 location)
+- All blog posts live in `src/content/blog/` — `.md` for plain prose, `.mdx` when a post needs inline components
+- Use `render(post)` not `post.render()` — Astro v5 API
+- Use `entry.id` not `entry.slug` for URL generation with the glob loader
+
+### Syntax highlighting
+Code blocks in `.md` and `.mdx` are syntax-highlighted automatically via Shiki (Astro's default). Specify the language on the fence:
+
+````
+```typescript
+const greeting = 'hello';
+```
+````
+
+No extra packages needed. Theme can be configured in `astro.config.mjs` under `markdown.shikiConfig` if needed.
+
+---
+
+## Blog authoring
+
+This site is **80–90% blog.** When making changes, the blog post experience is the primary concern — everything else is supporting context.
+
+### Creating a new post
+
+1. Create `src/content/blog/my-post-title.md` (or `.mdx` if components are needed inline).
+2. Add frontmatter — required fields are `title`, `description`, and `publishDate`.
+3. Write in Markdown. Use `.mdx` only when you need a component inline — don't default to MDX for every post.
+
+**Frontmatter reference:**
+```yaml
+---
+title: "The title of the post"
+description: "One or two sentence summary — used in the post list, meta description, and OG."
+publishDate: 2025-06-01
+category: Essay          # Essay · Note · Code · Process — shown in the kicker
+readingTime: 8           # minutes — optional, shown in the kicker and post list
+tags: [design, process]  # optional array — first tag shown in the byline
+draft: false             # true = excluded from build
+heroImage: /images/my-post-hero.jpg   # optional — post header + OG image
+heroImageAlt: "Alt text for the hero" # required if heroImage is set
+---
+```
+
+### Markdown patterns
+
+**Lead paragraph (drop cap):**
+```html
+<p class="lead">First paragraph gets a drop cap and larger type.</p>
+```
+
+**Pull quote:**
+```html
+<blockquote class="pullquote">
+  The thing about notebooks is they aren't for showing.
+  <cite>— someone</cite>
+</blockquote>
+```
+
+**Footnotes:**
+```html
+Something worth a footnote.<sup class="fn"><a id="ref-1" href="#fn-1">1</a></sup>
+
+<div class="footnotes">
+  <h4>Notes</h4>
+  <ol>
+    <li id="fn-1">The footnote text. <a href="#ref-1">↩</a></li>
+  </ol>
+</div>
+```
+
+**Inline note/callout (prose only):**
+```html
+<aside class="note">
+  <div class="label">A note</div>
+  <p>Something worth calling out in the margin.</p>
+</aside>
+```
+
+### Using components in MDX posts
+
+Rename the file to `.mdx`, then import at the top of the frontmatter block:
+
+```mdx
+---
+title: My Post
+publishDate: 2025-06-01
+description: A post with rich embeds.
+---
+
+import YouTubeEmbed from '../../components/YouTubeEmbed.astro';
+import VideoPlayer from '../../components/VideoPlayer.astro';
+import Plate from '../../components/Plate.astro';
+import Note from '../../components/Note.astro';
+
+Regular Markdown prose continues here.
+
+<YouTubeEmbed id="dQw4w9WgXcQ" title="Video title for screen readers" />
+
+<VideoPlayer src="/video/demo.mp4" caption="App walkthrough, 90 seconds." />
+
+<Plate src="/images/screenshot.jpg" alt="The interface" num="Fig. 01" caption="Final comp, 2025." />
+
+<Note label="Heads up">Something worth flagging inline.</Note>
+```
+
+### Component reference
+
+| Component | Use for | Key props |
+|-----------|---------|-----------|
+| `Plate` | Framed image or placeholder with caption | `src`, `alt`, `num`, `caption`, `ratio` |
+| `Note` | Sticky callout / aside | `label` |
+| `YouTubeEmbed` | YouTube video (privacy-safe, no cookies) | `id`, `title`, `start`, `caption` |
+| `VideoPlayer` | Self-hosted video | `src`, `poster`, `caption`, `ratio`, `autoplay`, `loop` |
+
+---
+
 ## Standards
 
 ### HTML
@@ -178,10 +318,13 @@ Everything required is committed: `.husky/commit-msg`, `commitlint.config.js`, a
 | `src/layouts/BaseLayout.astro` | HTML shell, SEO meta, JSON-LD slot, dark-mode init, fade-up IO |
 | `src/components/SiteHeader.astro` | Brand mark, primary nav, dark mode toggle |
 | `src/components/SiteFooter.astro` | Copyright + RSS/Colophon links |
-| `src/components/Plate.astro` | `<figure>` with framed image + mono caption |
+| `src/components/Plate.astro` | Framed image or placeholder with mono caption |
 | `src/components/Note.astro` | Sticky-note callout aside |
+| `src/components/YouTubeEmbed.astro` | Privacy-safe YouTube iframe with caption |
+| `src/components/VideoPlayer.astro` | Native `<video>` with poster + caption |
 | `src/content.config.ts` | Blog collection schema |
-| `src/content/blog/*.md` | Blog posts (Markdown with frontmatter) |
+| `src/content/blog/*.md` | Plain Markdown blog posts |
+| `src/content/blog/*.mdx` | Blog posts that need inline components |
 | `src/pages/index.astro` | Home page |
 | `src/pages/blog/index.astro` | Blog listing |
 | `src/pages/blog/[...slug].astro` | Blog post template |
