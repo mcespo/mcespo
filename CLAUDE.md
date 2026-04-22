@@ -67,6 +67,50 @@ When adding a new color:
 
 ---
 
+## Standards
+
+### HTML
+Write semantic, accessible markup. Use the right element for the job before reaching for a `<div>`. Key expectations:
+- Landmark elements (`<header>`, `<nav>`, `<main>`, `<article>`, `<aside>`, `<footer>`) over generic wrappers
+- `<time datetime="…">` for all dates
+- `aria-label` on landmarks that appear more than once per page
+- `aria-hidden="true"` on purely decorative elements
+- `alt` text on all meaningful images; `alt=""` on decorative ones
+- Prefer native form elements over custom-built ones
+
+### CSS
+Lean on modern CSS before adding complexity:
+- **Nesting** — always nest related rules rather than repeating selectors
+- **Modern media queries** — `@media (width <= 50rem)` not `@media (max-width: 50rem)`
+- **Container queries** — prefer `@container` over media queries for component-level layout shifts
+- **`:has()`** — use for parent-state selection before adding JS
+- **Logical properties** — `margin-inline`, `padding-block` etc. for i18n-friendly layouts
+- **`text-wrap: balance` / `text-wrap: pretty`** — on headings and prose by default
+
+### JavaScript
+Keep JS minimal. The stack preference in order:
+
+1. **No JS** — solve it with HTML/CSS first (`:has()`, `<details>`, `popover`, `dialog`)
+2. **Vanilla JS** — for simple one-off interactions (the dark mode toggle is a good model)
+3. **Alpine.js** — if component state becomes non-trivial (navigation open/close, tabs, accordions, form state). Add Alpine only when a vanilla solution would need to manage meaningful reactive state. Install via CDN to keep the bundle minimal: `<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>`
+4. **Nothing heavier** — no React, Vue, or Svelte unless the requirement fundamentally changes
+
+---
+
+## Maintenance
+
+### Packages — periodic check
+**Remind the user to run `npm outdated` roughly once a month.** The command is aliased as `npm run check-updates`. Surfaces this as a gentle prompt at the start of a session if it seems like a while since packages were last touched.
+
+Run the check:
+```bash
+npm run check-updates   # lists packages behind their latest version
+npm update              # updates within the semver range in package.json
+```
+For major-version bumps, review the changelog before updating.
+
+---
+
 ## Project conventions
 
 ### Design tokens
