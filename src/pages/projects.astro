@@ -1,0 +1,33 @@
+---
+/**
+ * Projects — stub page. Replace this content with real project entries.
+ */
+
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+---
+
+<BaseLayout
+  title="Projects — Marvin Céspedes"
+  description="Product design, brand work, and design engineering."
+>
+  <main class="site">
+    <SiteHeader currentPage="projects" compact />
+
+    <header class="fade-up max-w-[var(--measure)] mb-12">
+      <h1 class="font-display font-normal leading-[0.95] tracking-[-0.025em] m-0 mb-[1.125rem]" style="font-size: clamp(3rem, 7vw, 5rem)">
+        <em class="italic text-accent" style="font-variation-settings: 'SOFT' 80">The</em> work.
+      </h1>
+      <p class="font-display italic text-[1.375rem] text-ink-2 m-0">
+        Product design, brand, and everything in between.
+      </p>
+    </header>
+
+    <p class="font-hand text-[1.375rem] text-ink-2 mb-20">
+      Coming soon — I'm building this out. ✦
+    </p>
+
+    <SiteFooter />
+  </main>
+</BaseLayout>

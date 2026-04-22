@@ -1,0 +1,477 @@
+@import "tailwindcss";
+
+/* ── Tailwind theme ───────────────────────────────────────────
+   Exposes design tokens as Tailwind utilities.
+     text-ink, text-ink-2, text-ink-3
+     bg-paper, bg-paper-2, bg-accent, bg-code-bg …
+     font-display, font-body, font-mono, font-hand
+   Dark mode overrides --color-* directly; the :root aliases
+   below ensure legacy var(--ink) references update too.
+   ─────────────────────────────────────────────────────────── */
+@theme {
+  /* Ink + paper palette */
+  --color-ink:        oklch(13%   0.018 289);   /* #181620 */
+  --color-ink-2:      oklch(38.8% 0.025 290);   /* #4e4b5c */
+  --color-ink-3:      oklch(62.8% 0.021 295);   /* #9793a3 */
+  --color-paper:      oklch(97.5% 0.004 295);   /* #f7f6f8 */
+  --color-paper-2:    oklch(94.4% 0.007 292);   /* #ecebef */
+  --color-accent:     oklch(47.3% 0.186 289);   /* #6d4ac2 violet */
+  --color-accent-2:   oklch(64.5% 0.152 51);    /* #e07a2a orange */
+  --color-sticky:     oklch(90.6% 0.038 296);   /* #e7dff7 */
+  --color-sticky-ink: oklch(25.4% 0.112 289);   /* #3a2a6a */
+  --color-code-bg:    oklch(93.8% 0.025 296);   /* #ece7f5 */
+
+  /* Type stacks — generates font-display, font-body, font-mono, font-hand */
+  --font-display: "Fraunces", "Source Serif 4", Georgia, serif;
+  --font-body:    "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-mono:    "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-hand:    "Caveat", "Kalam", cursive;
+}
+
+/* ── Design tokens ────────────────────────────────────────────
+   Short aliases so existing CSS (var(--ink), var(--f-mono) …)
+   continues to work. Adding a new Tailwind token only requires
+   updating @theme above + the matching html.dark line.
+   ─────────────────────────────────────────────────────────── */
+:root {
+  /* Color aliases → resolve through the @theme custom properties */
+  --ink:        var(--color-ink);
+  --ink-2:      var(--color-ink-2);
+  --ink-3:      var(--color-ink-3);
+  --paper:      var(--color-paper);
+  --paper-2:    var(--color-paper-2);
+  --accent:     var(--color-accent);
+  --accent-2:   var(--color-accent-2);
+  --sticky:     var(--color-sticky);
+  --sticky-ink: var(--color-sticky-ink);
+  --code-bg:    var(--color-code-bg);
+
+  /* Font-stack aliases */
+  --f-display: var(--font-display);
+  --f-body:    var(--font-body);
+  --f-mono:    var(--font-mono);
+  --f-hand:    var(--font-hand);
+
+  /* Layout rhythm */
+  --measure:    72ch;
+  --gutter-w:   12.5rem;   /* 200px */
+  --gutter-gap: 3.5rem;    /* 56px  */
+  --page-x:     clamp(1.5rem, 5vw, 3.5rem);
+  --max-w:      62.5rem;   /* 1000px */
+
+  /* Motion */
+  --ease: cubic-bezier(.2, .7, .2, 1);
+
+  /* Background gradient wash — not exposed as Tailwind utilities */
+  --wash-a: oklch(95.2% 0.013 296);   /* #f1eef7 */
+  --wash-b: oklch(95.2% 0.013 62);    /* #f6eee7 */
+}
+
+/* ── Dark mode ────────────────────────────────────────────────
+   Overrides @theme vars; aliases and Tailwind utilities update
+   automatically via the CSS var chain.
+   html.dark is toggled by the localStorage script in BaseLayout
+   before first paint — never use prefers-color-scheme instead.
+   ─────────────────────────────────────────────────────────── */
+html.dark {
+  --color-ink:        oklch(90.6% 0.025 295);   /* #e7e2f5 */
+  --color-ink-2:      oklch(71.8% 0.040 295);   /* #b0aacc */
+  --color-ink-3:      oklch(52.4% 0.029 294);   /* #7a738f */
+  --color-paper:      oklch(11.3% 0.019 289);   /* #14121c */
+  --color-paper-2:    oklch(16.7% 0.032 289);   /* #201d2e */
+  --color-accent:     oklch(67.2% 0.177 289);   /* #a68cff */
+  --color-accent-2:   oklch(74.3% 0.141 51);    /* #f5a25a */
+  --color-sticky:     oklch(20%   0.058 289);   /* #29223d */
+  --color-sticky-ink: oklch(84.8% 0.053 295);   /* #d7ccf5 */
+  --color-code-bg:    oklch(14.8% 0.026 289);   /* #1c1a28 */
+  --wash-a:           oklch(15.5% 0.025 289);   /* #1d1a2a */
+  --wash-b:           oklch(20%   0.013 51);    /* #2a2220 */
+}
+
+/* ── Reset ────────────────────────────────────────────────────*/
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+
+/* ── Page background ──────────────────────────────────────────
+   Slow-drifting gradient between the two wash tones.
+   Stopped entirely for prefers-reduced-motion.
+   ─────────────────────────────────────────────────────────── */
+html {
+  background-color: var(--paper);
+  color: var(--ink);
+  background-image: linear-gradient(
+    -45deg,
+    var(--wash-a)  0%,
+    var(--paper)  25%,
+    var(--wash-b) 50%,
+    var(--paper)  75%,
+    var(--wash-a) 100%
+  );
+  background-size: 300% 300%;
+  animation: background-shift 24s ease-in-out infinite;
+  scroll-behavior: smooth;
+}
+
+@keyframes background-shift {
+  0%   { background-position:   0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position:   0% 50%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    animation: none;
+    background-image: none;
+    background-color: var(--paper);
+    scroll-behavior: auto;
+  }
+}
+
+/* ── Body base ────────────────────────────────────────────────*/
+body {
+  font-family: var(--f-body);
+  font-size: 1.125rem;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "onum", "kern";
+}
+
+img { max-width: 100%; display: block; }
+a { color: inherit; }
+
+/* ── Site container ───────────────────────────────────────────*/
+.site {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 0 var(--page-x);
+}
+
+/* ── Two-column reading shell ─────────────────────────────────
+   <section class="reading">
+     <div class="body">…prose…</div>
+     <aside class="gutter">…annotation…</aside>
+   </section>
+   Collapses at 50rem; hidden wholesale via html.hide-gutter.
+   ─────────────────────────────────────────────────────────── */
+.reading {
+  display: grid;
+  grid-template-columns: minmax(0, var(--measure)) var(--gutter-w);
+  gap: var(--gutter-gap);
+  align-items: start;
+  margin-bottom: 3rem;
+
+  & > .body { min-width: 0; }
+
+  & > .gutter {
+    font-family: var(--f-hand);
+    font-size: 1.125rem;
+    line-height: 1.35;
+    color: var(--ink-2);
+    padding-top: 0.375rem;
+    position: sticky;
+    top: 2rem;
+
+    & .marker {
+      font-family: var(--f-mono);
+      font-size: 0.625rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      display: block;
+      margin-bottom: 0.375rem;
+    }
+  }
+
+  @media (width <= 50rem) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+
+    & > .gutter { display: none; }
+  }
+}
+
+html.hide-gutter {
+  & .reading { grid-template-columns: minmax(0, var(--measure)); }
+  & .reading > .gutter { display: none; }
+}
+
+/* ── Prose ────────────────────────────────────────────────────*/
+.prose {
+  & p {
+    margin: 0 0 1.2em;
+    text-wrap: pretty;
+    hyphens: auto;
+  }
+
+  /* Traditional book paragraph indent after the first */
+  & p + p { text-indent: 1.6em; }
+
+  & p.no-indent,
+  & p.no-indent + p,
+  & p.lead { text-indent: 0; }
+
+  /* Lead — larger opening with a display drop cap */
+  & p.lead {
+    font-size: 1.375rem;
+    line-height: 1.55;
+    margin-bottom: 1.6em;
+
+    &::first-letter {
+      font-family: var(--f-display);
+      font-size: 4.4em;
+      line-height: 0.85;
+      float: left;
+      padding: 0.375rem 0.625rem 0 0;
+      font-weight: 400;
+      color: var(--ink);
+    }
+  }
+
+  & a {
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-decoration-color: var(--ink-3);
+    text-underline-offset: 0.1875rem;
+    transition: text-decoration-color .2s var(--ease), color .2s var(--ease);
+
+    &:hover { text-decoration-color: var(--accent-2); color: var(--accent-2); }
+  }
+
+  & em { font-style: italic; }
+  & strong { font-weight: 600; }
+
+  & h2 {
+    font-family: var(--f-display);
+    font-weight: 400;
+    font-style: italic;
+    font-size: 2rem;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    margin: 2.2em 0 0.6em;
+    text-wrap: balance;
+
+    /* Section symbol prepended to each heading */
+    &::before {
+      content: "§";
+      font-style: normal;
+      color: var(--ink-3);
+      font-size: 0.7em;
+      margin-right: 0.875rem;
+      vertical-align: 0.12em;
+    }
+  }
+
+  & h3 {
+    font-family: var(--f-display);
+    font-weight: 500;
+    font-size: 1.375rem;
+    letter-spacing: -0.005em;
+    margin: 1.8em 0 0.4em;
+  }
+
+  & ul,
+  & ol { margin: 0 0 1.2em; padding-left: 1.4em; }
+
+  & li { margin-bottom: 0.4em; line-height: 1.65; }
+
+  & code {
+    font-family: var(--f-mono);
+    font-size: 0.86em;
+    background: var(--code-bg);
+    padding: 0.0625rem 0.375rem;
+    border-radius: 0.1875rem;
+  }
+
+  & pre {
+    font-family: var(--f-mono);
+    font-size: 0.8125rem;
+    line-height: 1.55;
+    background: var(--code-bg);
+    color: var(--ink);
+    padding: 1.125rem 1.25rem;
+    border-radius: 0.25rem;
+    margin: 1.8em 0;
+    overflow-x: auto;
+
+    & code { background: transparent; padding: 0; font-size: inherit; }
+    & .com { color: var(--ink-3); font-style: italic; }
+    & .str { color: var(--accent); }
+    & .kw  { color: var(--ink); font-weight: 500; }
+  }
+
+  /* Footnote superscripts */
+  & sup.fn {
+    font-family: var(--f-mono);
+    font-size: 0.62em;
+    font-weight: 500;
+    vertical-align: super;
+    line-height: 0;
+    margin-left: 0.0625rem;
+
+    & a {
+      text-decoration: none;
+      color: var(--accent-2);
+      padding: 0 0.1875rem;
+      border-radius: 0.125rem;
+
+      &:hover { background: var(--accent-2); color: var(--paper); }
+    }
+  }
+}
+
+/* ── Pull quote ───────────────────────────────────────────────*/
+.pullquote {
+  font-family: var(--f-display);
+  font-weight: 400;
+  font-style: italic;
+  font-size: clamp(1.625rem, 3vw, 2.125rem);
+  line-height: 1.25;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+  margin: 2em 0 2em -1.25rem;
+  padding: 0 0 0 1.5rem;
+  border-left: 2px solid var(--accent);
+  text-wrap: balance;
+  max-width: 32ch;
+
+  & cite {
+    display: block;
+    margin-top: 0.625rem;
+    font-family: var(--f-mono);
+    font-style: normal;
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+}
+
+/* ── Sticky note callout ──────────────────────────────────────*/
+aside.note {
+  background: var(--sticky);
+  color: var(--sticky-ink);
+  border-left: 3px solid var(--accent);
+  padding: 0.875rem 1.125rem;
+  margin: 0.5rem 0 2.5rem;
+  max-width: var(--measure);
+
+  & .label {
+    font-family: var(--f-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 0.375rem;
+    opacity: 0.7;
+  }
+
+  & p {
+    font-family: var(--f-hand);
+    font-size: 1.25rem;
+    line-height: 1.35;
+    margin: 0;
+  }
+}
+
+/* ── Footnotes ────────────────────────────────────────────────*/
+.footnotes {
+  max-width: var(--measure);
+  margin: 4rem 0 3rem;
+  padding-top: 1.75rem;
+  border-top: 1px solid var(--ink);
+
+  & h4 {
+    font-family: var(--f-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0 0 1.125rem;
+    font-weight: 500;
+  }
+
+  & ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    counter-reset: fn;
+  }
+
+  & li {
+    counter-increment: fn;
+    display: grid;
+    grid-template-columns: 1.75rem 1fr;
+    gap: 0.75rem;
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    margin-bottom: 0.875rem;
+    color: var(--ink-2);
+
+    &::before {
+      content: counter(fn);
+      font-family: var(--f-mono);
+      font-size: 0.6875rem;
+      color: var(--accent-2);
+      padding-top: 0.1875rem;
+    }
+  }
+}
+
+/* ── Reading progress bar ─────────────────────────────────────*/
+.progress {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 2px;   /* intentional hairline — keep px */
+  background: transparent;
+  z-index: 50;
+  pointer-events: none;
+
+  & .bar {
+    height: 100%;
+    width: 0%;
+    background: var(--accent-2);
+    transition: width .1s linear;
+  }
+}
+
+/* ── Fade-up entrance animation ───────────────────────────────
+   .in is added by the IntersectionObserver in BaseLayout.
+   ─────────────────────────────────────────────────────────── */
+.fade-up {
+  opacity: 0;
+  transform: translateY(0.625rem);
+  transition: opacity .7s var(--ease), transform .7s var(--ease);
+
+  &.in { opacity: 1; transform: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ── Gutter decoration helpers ────────────────────────────────*/
+.gutter {
+  & .arrow {
+    font-family: var(--f-hand);
+    font-size: 1.375rem;
+    color: var(--accent);
+    margin-right: 0.25rem;
+  }
+
+  & .doodle {
+    margin-top: 0.75rem;
+    font-family: var(--f-hand);
+    color: var(--accent);
+    font-size: 2rem;
+    line-height: 1;
+  }
+}
+
+.doodle {
+  display: inline-block;
+  color: var(--accent);
+  vertical-align: middle;
+}

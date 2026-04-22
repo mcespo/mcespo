@@ -1,0 +1,23 @@
+---
+/**
+ * SiteFooter — copyright line + RSS and Colophon links.
+ * The year is set server-side at build time.
+ */
+
+const year = new Date().getFullYear();
+---
+
+<style>
+  footer a {
+    transition: color .2s var(--ease);
+    &:hover { color: var(--color-accent-2); }
+  }
+</style>
+
+<footer class="flex justify-between items-baseline pt-[1.125rem] pb-8 font-mono text-[0.6875rem] tracking-[0.08em] text-ink-3">
+  <span>© {year} Marvin Céspedes</span>
+  <span>
+    <a class="text-ink-2 no-underline ml-[1.125rem]" href="/feed.xml">RSS</a>
+    <a class="text-ink-2 no-underline ml-[1.125rem]" href="/colophon">Colophon</a>
+  </span>
+</footer>

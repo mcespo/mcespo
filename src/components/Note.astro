@@ -1,0 +1,25 @@
+---
+/**
+ * Note — a sticky-note callout with an accent left border.
+ *
+ * Used both as a standalone section callout and inline within
+ * the prose column. The default slot renders as handwriting-
+ * style text via --f-hand.
+ *
+ * Usage:
+ *   <Note label="A note in the margin">
+ *     psst — if you read to the end there's a small thing waiting. ↓
+ *   </Note>
+ */
+
+interface Props {
+  label?: string;
+}
+
+const { label = 'A note in the margin' } = Astro.props;
+---
+
+<aside class="note" role="note">
+  <div class="label">{label}</div>
+  <p><slot /></p>
+</aside>

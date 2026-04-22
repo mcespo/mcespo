@@ -1,0 +1,122 @@
+---
+/**
+ * SiteHeader — the brand mark + primary navigation.
+ *
+ * Props:
+ *   currentPage — ID of the active nav item, used to set aria-current="page"
+ *   compact     — reduces bottom margin (used on blog posts vs. home)
+ */
+
+interface Props {
+  currentPage?: 'home' | 'projects' | 'blog' | 'contact';
+  compact?: boolean;
+}
+
+const { currentPage, compact = false } = Astro.props;
+
+const navLinks = [
+  { href: '/',         label: 'Home',     id: 'home'     },
+  { href: '/projects', label: 'Projects', id: 'projects' },
+  { href: '/blog',     label: 'Blog',     id: 'blog'     },
+  { href: '/contact',  label: 'Say hi',   id: 'contact'  },
+] as const;
+---
+
+<style>
+  /* Nav links — hover draws a bottom border, active suppresses it */
+  .nav a {
+    padding-bottom: 0.125rem;
+    border-bottom: 1px solid transparent;
+    transition: color .2s var(--ease), border-color .2s var(--ease);
+
+    &:hover {
+      color: var(--color-accent-2);
+      border-color: var(--color-accent-2);
+    }
+
+    &[aria-current="page"] {
+      color: var(--color-ink);
+      border-color: transparent;
+    }
+  }
+
+  /* Dark mode toggle — styled as a small bordered label */
+  .dark-toggle {
+    background: none;
+    border: 1px solid var(--color-ink-3);
+    color: var(--color-ink-2);
+    font-size: 0.625rem;
+    letter-spacing: 0.08em;
+    padding: 0.1875rem 0.4375rem;
+    cursor: pointer;
+    line-height: 1.5;
+    vertical-align: baseline;
+    transition: color .2s var(--ease), border-color .2s var(--ease);
+
+    &:hover {
+      color: var(--color-accent-2);
+      border-color: var(--color-accent-2);
+    }
+  }
+</style>
+
+<header class={`flex items-baseline justify-between pt-8 pb-7 ${compact ? 'mb-12' : 'mb-[5.5rem]'}`}>
+  <a class="flex items-baseline gap-3 no-underline" href="/">
+    <span class="font-display font-medium text-[1.75rem] leading-none tracking-[-0.02em]">m.</span>
+    <span class="font-mono text-[0.6875rem] tracking-[0.12em] uppercase text-ink-2">Marvin Céspedes</span>
+  </a>
+
+  <nav class="nav flex items-baseline gap-7 font-mono text-[0.75rem] tracking-[0.08em] uppercase" aria-label="Primary">
+    {navLinks.map(({ href, label, id }) => (
+      <a
+        href={href}
+        class="text-ink-2 no-underline"
+        aria-current={currentPage === id ? 'page' : undefined}
+      >
+        {label}
+      </a>
+    ))}
+
+    <!--
+      Dark mode toggle — reads and writes the same localStorage
+      key used by the inline script in BaseLayout <head>.
+    -->
+    <button
+      class="dark-toggle font-mono"
+      id="dark-toggle"
+      aria-label="Toggle dark mode"
+      title="Toggle dark mode"
+    >☾</button>
+  </nav>
+</header>
+
+<script>
+  const toggle = document.getElementById('dark-toggle') as HTMLButtonElement | null;
+  if (!toggle) throw new Error('dark-toggle not found');
+
+  const KEY = 'mcespo.tweaks';
+
+  function getPrefs(): Record<string, boolean> {
+    try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch { return {}; }
+  }
+
+  function setPrefs(p: Record<string, boolean>) {
+    localStorage.setItem(KEY, JSON.stringify(p));
+  }
+
+  function syncButton() {
+    const dark = document.documentElement.classList.contains('dark');
+    toggle.setAttribute('aria-pressed', String(dark));
+    toggle.textContent = dark ? '☀' : '☾';
+    toggle.title = dark ? 'Switch to light mode' : 'Switch to dark mode';
+  }
+
+  toggle.addEventListener('click', () => {
+    const dark = !document.documentElement.classList.contains('dark');
+    document.documentElement.classList.toggle('dark', dark);
+    setPrefs({ ...getPrefs(), dark });
+    syncButton();
+  });
+
+  syncButton();
+</script>

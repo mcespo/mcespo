@@ -1,0 +1,323 @@
+---
+/**
+ * Home — the index page for mcespo.com.
+ *
+ * Sections (in order):
+ *   1. Hero — display h1 + lede with a margin annotation
+ *   2. Prose intro — short personal text
+ *   3. Featured figure — a framed project image / placeholder
+ *   4. Sticky note aside
+ *   5. Recent work — numbered project table
+ *   6. Colophon row — Elsewhere links + Currently block
+ *   7. Footer
+ *
+ * Schema.org: WebSite + Person graph.
+ */
+
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import Plate from '../components/Plate.astro';
+import Note from '../components/Note.astro';
+
+/* ── Schema.org structured data ──────────────────────────────
+   Bundled as a @graph so a single <script> covers both types.
+   ─────────────────────────────────────────────────────────── */
+const schema = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebSite',
+      name: 'Marvin Céspedes',
+      url: 'https://mcespo.com',
+      description: 'Designer, maker, occasional writer.',
+      author: { '@id': '#marvin' },
+    },
+    {
+      '@type': 'Person',
+      '@id': '#marvin',
+      name: 'Marvin Céspedes',
+      url: 'https://mcespo.com',
+      email: 'hi@mcespo.com',
+      sameAs: [
+        'https://github.com/mcespo',
+        'https://read.cv/mcespo',
+      ],
+    },
+  ],
+};
+
+/* ── Recent work — add real projects here ────────────────────*/
+const recentWork = [
+  {
+    num: '01',
+    href: '/projects/project-name',
+    title: '[Project Name]',
+    subtitle: 'A rewrite of the onboarding experience.',
+    role: 'Product design',
+    year: '2025',
+  },
+  {
+    num: '02',
+    href: '/projects/project-name',
+    title: '[Project Name]',
+    subtitle: 'Identity + site for a small publisher.',
+    role: 'Brand / Web',
+    year: '2024',
+  },
+  {
+    num: '03',
+    href: '/projects/project-name',
+    title: '[Project Name]',
+    subtitle: 'Tooling for a team of three.',
+    role: 'Design engineering',
+    year: '2024',
+  },
+];
+---
+
+<style>
+  /* ── Hero ─────────────────────────────────────────────────*/
+
+  /* Hairline rules flanking the greeting — pseudo-elements only */
+  .hello::before,
+  .hello::after {
+    content: '';
+    flex: 0 0 1.75rem;
+    height: 1px;
+    background: var(--color-ink);
+    opacity: 0.5;
+  }
+  .hello::before { flex: 0 0 1.375rem; }
+
+  /* Fraunces SOFT axis — not expressible as a Tailwind utility */
+  h1.display {
+    font-variation-settings: "SOFT" 30;
+
+    & em { font-variation-settings: "SOFT" 100; }
+  }
+
+  /* ── Recent work ──────────────────────────────────────────*/
+
+  /* Four-column layout: index · title+subtitle · role · year */
+  .work-row {
+    grid-template-columns: 3rem 1fr 8.75rem 6.875rem;
+
+    @media (width <= 45rem) {
+      grid-template-columns: 2.25rem 1fr 4.375rem;
+
+      & .role { display: none; }
+    }
+  }
+
+  /* Animated underline drawn from left on hover */
+  .ttl a {
+    background-image: linear-gradient(var(--color-ink), var(--color-ink));
+    background-size: 0% 1px;
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    transition: background-size .35s var(--ease);
+    padding-bottom: 0.125rem;
+
+    &:hover { background-size: 100% 1px; }
+  }
+
+  /* "All projects →" link — arrow slides right on hover */
+  .more {
+    transition: color .2s var(--ease);
+    &:hover {
+      color: var(--color-accent-2);
+      & .arr { transform: translateX(0.25rem); }
+    }
+  }
+  .arr { display: inline-block; transition: transform .2s var(--ease); }
+
+  /* ── Colophon ─────────────────────────────────────────────*/
+
+  .colophon-link {
+    border-bottom: 1px solid transparent;
+    transition: border-color .2s var(--ease), color .2s var(--ease);
+    &:hover { border-color: var(--color-accent-2); color: var(--color-accent-2); }
+  }
+</style>
+
+<BaseLayout
+  title="Marvin Céspedes — Designer & Maker"
+  description="Designer, maker, occasional writer. Building careful interfaces and keeping an honest record of the work."
+  schema={schema}
+>
+  <main class="site">
+
+    <!-- ═══ Header ══════════════════════════════════════════ -->
+    <SiteHeader currentPage="home" />
+
+    <!-- ═══ Hero ════════════════════════════════════════════
+         Two-column: display heading + lede / handwritten annotation
+         ─────────────────────────────────────────────────── -->
+    <section class="reading fade-up mb-[4.5rem]" aria-label="Introduction">
+      <div class="body">
+        <!-- Decorative greeting with a small hand-drawn wave -->
+        <p class="hello flex items-center gap-3 font-hand text-[1.375rem] text-ink-2 mt-0 mb-[0.875rem]" aria-hidden="true">
+          howdy
+          <svg
+            class="doodle"
+            width="22" height="10"
+            viewBox="0 0 22 10"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path
+              d="M1 5 Q 5 1, 10 5 T 20 5"
+              stroke="currentColor"
+              stroke-width="1.4"
+              stroke-linecap="round"
+            />
+          </svg>
+        </p>
+
+        <!-- Display heading — variable-font italic for the surname -->
+        <h1 class="display font-display font-normal leading-[0.95] tracking-[-0.025em] mb-7" style="font-size: clamp(3.5rem, 9vw, 7rem)">
+          Marvin<br />
+          <em class="italic text-accent">Céspedes.</em>
+        </h1>
+
+        <p class="font-body text-[1.375rem] leading-[1.5] text-ink mb-3 max-w-[34ch] text-pretty">
+          Designer &amp; maker in [City]. I build careful interfaces, write the
+          occasional essay, and keep a small collection of artifacts here so you
+          can see how I think.
+        </p>
+      </div>
+
+      <aside class="gutter" aria-label="About">
+        <span class="marker">about</span>
+        <span class="arrow">←</span>
+        Lorem ipsum dolor sit — volunteer work, client work, and a very patient
+        golden retriever.
+      </aside>
+    </section>
+
+    <!-- ═══ Prose intro ══════════════════════════════════════ -->
+    <section class="reading" aria-label="Introduction prose">
+      <div class="body prose">
+        <p>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit. I spend my
+          days on <a href="/projects">product design</a> for [COMPANY] and my
+          evenings on small things that have no client — a book jacket for a
+          friend, a note-taking tool for myself, a photograph that took seven
+          tries to frame right.
+        </p>
+        <p>
+          What you'll find here is a working record. Unfinished pieces, honest
+          captions, and a few footnotes about what I'd do differently. The
+          point is the trail, not the trophy case.
+        </p>
+      </div>
+
+      <aside class="gutter">
+        <span class="marker">fig. 01</span>
+        A recent studio corner.<br />35mm, overcast afternoon.
+      </aside>
+    </section>
+
+    <!-- ═══ Featured figure ══════════════════════════════════
+         Framed placeholder — swap src once you have imagery.
+         ─────────────────────────────────────────────────── -->
+    <section class="reading fade-up" aria-label="Featured project">
+      <div class="body">
+        <Plate
+          num="Fig. 02"
+          label="[ PROJECT HERO · 1600 × 1200 ]"
+          caption="<em>[Project Name]</em> — landing interface, final comp. 2025."
+          ratio="4/3"
+        />
+      </div>
+
+      <aside class="gutter">
+        <span class="marker">note</span>
+        Shot from the working file. I like when a homepage feels like the door
+        to the rest of the house, not the house itself.
+      </aside>
+    </section>
+
+    <!-- ═══ Sticky aside ═════════════════════════════════════ -->
+    <Note label="A note in the margin">
+      psst — if you read to the end there's a small thing waiting. ↓
+    </Note>
+
+    <!-- ═══ Recent work ══════════════════════════════════════
+         Four columns: index · title+subtitle · role · year
+         Role column hidden on small screens via CSS.
+         ─────────────────────────────────────────────────── -->
+    <section class="mb-20" aria-label="Recent work">
+      <header class="flex items-baseline justify-between pb-[0.625rem] border-b border-ink">
+        <h2 class="font-display font-normal italic text-[1.75rem] m-0 tracking-[-0.01em]">Recent work</h2>
+        <a class="more font-mono text-[0.6875rem] tracking-[0.1em] uppercase text-ink-2 no-underline" href="/projects">
+          All projects <span class="arr" aria-hidden="true">→</span>
+        </a>
+      </header>
+
+      <ol class="list-none p-0 m-0">
+        {recentWork.map(({ num, href, title, subtitle, role, year }) => (
+          <li class="work-row fade-up grid gap-6 items-baseline py-[1.375rem] border-b border-ink-3 last:border-ink">
+            <span class="num font-mono text-[0.6875rem] text-ink-3 tracking-[0.05em]" aria-hidden="true">{num}</span>
+            <div class="ttl font-display text-[1.625rem] leading-[1.1] tracking-[-0.015em] font-normal">
+              <a class="no-underline" href={href}>{title}</a>
+              <small class="font-body italic text-base text-ink-2 block mt-1 tracking-normal">{subtitle}</small>
+            </div>
+            <span class="role font-mono text-[0.6875rem] tracking-[0.08em] uppercase text-ink-2">{role}</span>
+            <span class="yr font-mono text-[0.6875rem] tracking-[0.08em] text-ink-3 text-right">
+              <time datetime={year}>{year}</time>
+            </span>
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    <!-- ═══ Colophon row ═════════════════════════════════════
+         Two columns: Elsewhere links / Currently reading block
+         ─────────────────────────────────────────────────── -->
+    <section class="colophon fade-up grid grid-cols-2 gap-12 pt-8 pb-2 border-t border-ink mb-10" aria-label="Colophon">
+      <div>
+        <h3 class="font-mono text-[0.6875rem] tracking-[0.12em] uppercase text-ink-3 m-0 mb-[0.625rem] font-medium">Elsewhere</h3>
+        <ul class="list-none p-0 m-0 text-base">
+          <li class="flex justify-between py-[0.375rem] border-b border-dotted border-ink-3">
+            <span class="text-ink-2 italic">email</span>
+            <a class="colophon-link no-underline" href="mailto:hi@mcespo.com">hi@mcespo.com</a>
+          </li>
+          <li class="flex justify-between py-[0.375rem] border-b border-dotted border-ink-3">
+            <span class="text-ink-2 italic">github</span>
+            <a class="colophon-link no-underline" href="https://github.com/mcespo" rel="noopener noreferrer">@mcespo</a>
+          </li>
+          <li class="flex justify-between py-[0.375rem] border-b border-dotted border-ink-3">
+            <span class="text-ink-2 italic">read.cv</span>
+            <a class="colophon-link no-underline" href="https://read.cv/mcespo" rel="noopener noreferrer">mcespo</a>
+          </li>
+          <li class="flex justify-between py-[0.375rem] border-b border-dotted border-ink-3">
+            <span class="text-ink-2 italic">are.na</span>
+            <a class="colophon-link no-underline" href="https://www.are.na/marvin-cespedes" rel="noopener noreferrer">marvin-cespedes</a>
+          </li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="font-mono text-[0.6875rem] tracking-[0.12em] uppercase text-ink-3 m-0 mb-[0.625rem] font-medium">Currently</h3>
+        <p class="m-0 text-base leading-[1.5] max-w-[42ch]">
+          Reading <em>[Book Title]</em>, designing [Project] at [Company],
+          and learning to make better sourdough. Open to small collaborations
+          in the second half of the year.
+        </p>
+      </div>
+    </section>
+
+    <!-- ═══ Footer ══════════════════════════════════════════ -->
+    <SiteFooter />
+
+  </main>
+</BaseLayout>
+
+<style>
+  /* Colophon collapses to single column at narrow viewports */
+  .colophon {
+    @media (width <= 45rem) { grid-template-columns: 1fr; gap: 2rem; }
+  }
+</style>

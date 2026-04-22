@@ -1,0 +1,261 @@
+---
+/**
+ * Blog post — dynamic route for /blog/[slug].
+ *
+ * Sections:
+ *   1. Reading progress bar (fixed, accent-colored)
+ *   2. Back link + kicker + post title + dek + byline
+ *   3. Article body in the two-column reading shell
+ *   4. Footnotes (from Markdown)
+ *   5. Post-end row (thanks + share links)
+ *   6. Prev/next navigation
+ *   7. Related posts
+ *   8. Footer
+ *
+ * Schema.org: BlogPosting with author Person.
+ */
+
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SiteHeader from '../../components/SiteHeader.astro';
+import SiteFooter from '../../components/SiteFooter.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog', ({ data }) => !data.draft);
+  return posts.map((post) => ({
+    /* Astro v5 glob loader uses entry.id as the slug */
+    params: { slug: post.id },
+    props: { post, allPosts: posts },
+  }));
+}
+
+interface Props {
+  post: CollectionEntry<'blog'>;
+  allPosts: CollectionEntry<'blog'>[];
+}
+
+const { post, allPosts } = Astro.props;
+const { Content } = await render(post);
+
+/* ── Adjacent posts for prev/next ────────────────────────────*/
+const sorted = [...allPosts].sort(
+  (a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf(),
+);
+const idx = sorted.findIndex((p) => p.id === post.id);
+const prev = sorted[idx + 1] ?? null;
+const next = sorted[idx - 1] ?? null;
+
+/* ── Related posts — same category, excluding current ────────*/
+const related = sorted
+  .filter((p) => p.id !== post.id && p.data.category === post.data.category)
+  .slice(0, 3);
+
+/* ── Schema.org: BlogPosting ─────────────────────────────────*/
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: post.data.title,
+  description: post.data.description,
+  datePublished: post.data.publishDate.toISOString(),
+  keywords: post.data.tags.join(', '),
+  url: new URL(`/blog/${post.id}`, Astro.site).href,
+  author: {
+    '@type': 'Person',
+    name: 'Marvin Céspedes',
+    url: 'https://mcespo.com',
+  },
+  publisher: {
+    '@type': 'Person',
+    name: 'Marvin Céspedes',
+    url: 'https://mcespo.com',
+  },
+};
+
+/* ── Formatting helpers ───────────────────────────────────────*/
+function longDate(d: Date) {
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+function isoDate(d: Date) { return d.toISOString().slice(0, 10); }
+---
+
+<style>
+  /* Back link — rule extends on hover; uses ::before */
+  .back-link {
+    transition: color .2s var(--ease);
+
+    &::before {
+      content: '';
+      display: inline-block;
+      width: 1.125rem;
+      height: 1px;
+      background: currentColor;
+      transition: width .2s var(--ease);
+    }
+
+    &:hover {
+      color: var(--color-accent-2);
+      &::before { width: 1.75rem; }
+    }
+  }
+
+  /* Thin rule extending from the kicker line */
+  .post-kicker::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--color-ink-3);
+    max-width: 7.5rem;
+  }
+
+  /* Share links */
+  .share a {
+    border-bottom: 1px solid transparent;
+    padding-bottom: 0.125rem;
+    transition: border-color .2s var(--ease), color .2s var(--ease);
+    &:hover { color: var(--color-accent-2); border-color: var(--color-accent-2); }
+  }
+
+  /* Prev/next hover lift */
+  .prev-next a {
+    transition: transform .2s var(--ease);
+    &:hover { transform: translateY(-0.125rem); }
+  }
+
+  /* Related post animated underline */
+  .related-link {
+    background-image: linear-gradient(var(--color-ink), var(--color-ink));
+    background-size: 0% 1px;
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    transition: background-size .35s var(--ease);
+    padding-bottom: 0.125rem;
+    &:hover { background-size: 100% 1px; }
+  }
+
+  /* Prev/next grid — collapses at narrow viewports */
+  .prev-next {
+    @media (width <= 40rem) {
+      grid-template-columns: 1fr;
+      & .next { text-align: left; }
+    }
+  }
+</style>
+
+<BaseLayout
+  title={`${post.data.title} — Marvin Céspedes`}
+  description={post.data.description}
+  schema={schema}
+  showProgress={true}
+>
+  <main class="site">
+    <SiteHeader currentPage="blog" compact />
+
+    <!-- ═══ Post header ═══════════════════════════════════════ -->
+    <header class="max-w-[var(--measure)] mb-14">
+      <!-- Back link — decorative rule extends on hover -->
+      <a class="back-link font-mono text-[0.6875rem] tracking-[0.1em] uppercase text-ink-2 no-underline inline-flex items-center gap-2 mb-10" href="/blog">
+        Back to blog
+      </a>
+
+      <p class="post-kicker font-mono text-[0.6875rem] tracking-[0.12em] uppercase text-ink-2 m-0 mb-[1.125rem] flex items-center gap-[0.875rem]">
+        {post.data.category}
+        {post.data.readingTime && (
+          <> · {post.data.readingTime} min read</>
+        )}
+      </p>
+
+      <h1
+        class="font-display font-normal leading-[1.04] tracking-[-0.02em] mb-[1.375rem] text-balance"
+        style="font-size: clamp(2.5rem, 6vw, 4rem)"
+        set:html={post.data.title.replace(/\*(.+?)\*/g, '<em>$1</em>')}
+      />
+
+      <p class="font-display font-normal italic text-ink-2 mb-7 max-w-[52ch] text-pretty leading-[1.4]" style="font-size: clamp(1.25rem, 2.2vw, 1.5rem)">
+        {post.data.description}
+      </p>
+
+      <!-- Byline — author · date · tag -->
+      <div class="flex items-baseline gap-[0.875rem] flex-wrap font-mono text-[0.6875rem] tracking-[0.06em] text-ink-2">
+        <span class="uppercase text-ink">Marvin Céspedes</span>
+        <!-- Physical 3×3 dot — intentional rendering artifact -->
+        <span class="inline-block w-[3px] h-[3px] rounded-full bg-ink-3" aria-hidden="true"></span>
+        <time datetime={isoDate(post.data.publishDate)}>
+          {longDate(post.data.publishDate)}
+        </time>
+        {post.data.tags.length > 0 && (
+          <>
+            <span class="inline-block w-[3px] h-[3px] rounded-full bg-ink-3" aria-hidden="true"></span>
+            <span>Filed in <em>{post.data.tags[0]}</em></span>
+          </>
+        )}
+      </div>
+    </header>
+
+    <!-- ═══ Article body ══════════════════════════════════════
+         Markdown is rendered into the .body.prose column.
+         ─────────────────────────────────────────────────── -->
+    <article class="reading" aria-label="Post body">
+      <div class="body prose">
+        <Content />
+      </div>
+
+      <aside class="gutter">
+        <span class="marker">aside</span>
+        A notebook without crossed-out pages is not a notebook — it's a
+        performance.
+        <div class="doodle">↙</div>
+      </aside>
+    </article>
+
+    <!-- ═══ Post end row ══════════════════════════════════════ -->
+    <section class="max-w-[var(--measure)] mt-12 pt-7 border-t border-ink grid grid-cols-[1fr_auto] gap-6 items-baseline" aria-label="End of post">
+      <p class="font-display italic text-[1.25rem] text-ink-2 m-0">Thanks for reading.</p>
+      <div class="share font-mono text-[0.6875rem] tracking-[0.08em] uppercase text-ink-2 flex gap-4 no-underline">
+        <a class="no-underline" href={`mailto:?subject=${encodeURIComponent(post.data.title)}&body=${encodeURIComponent(new URL(`/blog/${post.id}`, Astro.site).href)}`}>Email</a>
+        <a class="no-underline" href="/feed.xml">RSS</a>
+      </div>
+    </section>
+
+    <!-- ═══ Prev / Next ═══════════════════════════════════════ -->
+    {(prev || next) && (
+      <nav class="prev-next max-w-[var(--measure)] mt-12 mb-20 grid grid-cols-2 gap-6" aria-label="Post navigation">
+        {prev ? (
+          <a href={`/blog/${prev.id}`} class="no-underline text-current pt-5 border-t border-ink block">
+            <div class="font-mono text-[0.625rem] tracking-[0.12em] uppercase text-ink-3 mb-[0.375rem] flex items-center gap-[0.375rem]">← Previous</div>
+            <div class="font-display text-[1.25rem] leading-[1.2] tracking-[-0.005em] text-ink">{prev.data.title}</div>
+          </a>
+        ) : <span />}
+
+        {next && (
+          <a href={`/blog/${next.id}`} class="next no-underline text-current pt-5 border-t border-ink block text-right">
+            <div class="font-mono text-[0.625rem] tracking-[0.12em] uppercase text-ink-3 mb-[0.375rem] flex items-center justify-end gap-[0.375rem]">Next →</div>
+            <div class="font-display text-[1.25rem] leading-[1.2] tracking-[-0.005em] text-ink">{next.data.title}</div>
+          </a>
+        )}
+      </nav>
+    )}
+
+    <!-- ═══ Related posts ═════════════════════════════════════ -->
+    {related.length > 0 && (
+      <section class="max-w-[var(--measure)] mt-6 mb-20" aria-label="Related posts">
+        <h3 class="font-mono text-[0.6875rem] tracking-[0.12em] uppercase text-ink-3 m-0 mb-[1.125rem] font-medium">More from the blog</h3>
+        <ol class="list-none p-0 m-0">
+          {related.map((p) => (
+            <li class="grid gap-5 py-[0.875rem] border-b border-dotted border-ink-3 last:border-none" style="grid-template-columns: 1fr 6.875rem">
+              <a class="related-link font-display text-[1.25rem] leading-[1.25] no-underline text-ink" href={`/blog/${p.id}`}>{p.data.title}</a>
+              <span class="font-mono text-[0.6875rem] text-ink-3 text-right self-center tracking-[0.05em]">
+                <time datetime={isoDate(p.data.publishDate)}>
+                  {p.data.publishDate.getFullYear()} ·{' '}
+                  {p.data.publishDate.toLocaleDateString('en-US', { month: 'short' })}
+                </time>
+              </span>
+            </li>
+          ))}
+        </ol>
+      </section>
+    )}
+
+    <!-- ═══ Footer ══════════════════════════════════════════ -->
+    <SiteFooter />
+  </main>
+</BaseLayout>

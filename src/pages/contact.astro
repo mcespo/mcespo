@@ -1,0 +1,46 @@
+---
+/**
+ * Contact — a simple say-hi page.
+ */
+
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+---
+
+<BaseLayout
+  title="Say hi — Marvin Céspedes"
+  description="Get in touch with Marvin Céspedes."
+>
+  <main class="site">
+    <SiteHeader currentPage="contact" compact />
+
+    <section class="reading fade-up" aria-label="Contact">
+      <div class="body">
+        <h1 class="font-display font-normal leading-[0.95] tracking-[-0.025em] m-0 mb-8" style="font-size: clamp(3rem, 7vw, 5rem)">
+          Say <em class="italic text-accent" style="font-variation-settings: 'SOFT' 80">hi.</em>
+        </h1>
+
+        <div class="prose">
+          <p class="no-indent">
+            The best way to reach me is email:
+            <a href="mailto:hi@mcespo.com">hi@mcespo.com</a>.
+            I answer every one.
+          </p>
+          <p>
+            I'm open to conversations about product design, brand work, and
+            small collaborations. I'm not looking for full-time roles right
+            now, but I'm always happy to talk.
+          </p>
+        </div>
+      </div>
+
+      <aside class="gutter">
+        <span class="marker">response time</span>
+        Usually within a day or two, always within the week.
+      </aside>
+    </section>
+
+    <SiteFooter />
+  </main>
+</BaseLayout>

@@ -1,0 +1,110 @@
+---
+/**
+ * Blog index — lists all published posts in reverse chronological order.
+ */
+
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SiteHeader from '../../components/SiteHeader.astro';
+import SiteFooter from '../../components/SiteFooter.astro';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf());
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'Blog',
+  name: 'Marvin Céspedes — Blog',
+  url: 'https://mcespo.com/blog',
+  description: 'Essays on craft, design, and the working process.',
+  author: {
+    '@type': 'Person',
+    name: 'Marvin Céspedes',
+    url: 'https://mcespo.com',
+  },
+};
+
+/* Format "April 2026" from a Date object */
+function formatDate(d: Date) {
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+}
+
+/* Format "2026-04" for the datetime attribute */
+function isoMonth(d: Date) {
+  return d.toISOString().slice(0, 7);
+}
+---
+
+<style>
+  /* Animated underline on post title links */
+  .post-ttl a {
+    background-image: linear-gradient(var(--color-ink), var(--color-ink));
+    background-size: 0% 1px;
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    transition: background-size .35s var(--ease);
+    padding-bottom: 0.125rem;
+
+    &:hover { background-size: 100% 1px; }
+  }
+
+  /* Three-column layout; collapses to stacked at narrow viewports */
+  .post-row {
+    grid-template-columns: 8.75rem auto 1fr;
+
+    @media (width <= 40rem) {
+      grid-template-columns: 1fr;
+      gap: 0.5rem;
+
+      & .post-meta { flex-direction: row; gap: 0.75rem; }
+    }
+  }
+</style>
+
+<BaseLayout
+  title="Blog — Marvin Céspedes"
+  description="Essays on craft, design, and the working process."
+  schema={schema}
+>
+  <main class="site">
+    <SiteHeader currentPage="blog" compact />
+
+    <!-- Page heading -->
+    <header class="fade-up max-w-[var(--measure)] mb-16">
+      <h1 class="font-display font-normal leading-[0.95] tracking-[-0.025em] m-0 mb-[1.125rem]" style="font-size: clamp(3rem, 7vw, 5rem)">
+        <em class="italic text-accent" style="font-variation-settings: 'SOFT' 80">The</em> blog.
+      </h1>
+      <p class="font-display italic text-[1.375rem] text-ink-2 m-0">
+        Essays, notes, and the occasional long thought.
+      </p>
+    </header>
+
+    <!-- Post list -->
+    <ol class="list-none p-0 mb-20 max-w-[var(--measure)] border-t border-ink" aria-label="Blog posts">
+      {posts.map((post) => (
+        <li class="post-row fade-up grid gap-x-8 gap-y-[1.25rem] items-baseline py-7 border-b border-ink-3 last:border-ink">
+          <time
+            class="post-date font-mono text-[0.6875rem] tracking-[0.06em] text-ink-3 whitespace-nowrap"
+            datetime={isoMonth(post.data.publishDate)}
+          >
+            {formatDate(post.data.publishDate)}
+          </time>
+
+          <div class="post-meta flex flex-col gap-1">
+            <span class="post-cat font-mono text-[0.625rem] tracking-[0.1em] uppercase text-ink-3 whitespace-nowrap">{post.data.category}</span>
+            {post.data.readingTime && (
+              <span class="post-read font-mono text-[0.625rem] tracking-[0.1em] uppercase text-ink-3 whitespace-nowrap">{post.data.readingTime} min</span>
+            )}
+          </div>
+
+          <div class="post-ttl font-display text-[1.375rem] leading-[1.15] tracking-[-0.01em]">
+            <a class="no-underline" href={`/blog/${post.id}`}>{post.data.title}</a>
+            <p class="font-body italic text-base text-ink-2 leading-[1.4] mt-[0.375rem] mb-0">{post.data.description}</p>
+          </div>
+        </li>
+      ))}
+    </ol>
+
+    <SiteFooter />
+  </main>
+</BaseLayout>

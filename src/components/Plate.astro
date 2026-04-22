@@ -1,0 +1,65 @@
+---
+/**
+ * Plate — a framed figure with a mono caption.
+ *
+ * When no `src` is provided the frame renders a placeholder label.
+ * The `ratio` prop sets the CSS aspect-ratio of the frame.
+ *
+ * Usage:
+ *   <Plate num="Fig. 02" caption="<em>Project Name</em> — final comp, 2025." />
+ *   <Plate num="Fig. 01" src="/img/photo.jpg" alt="Studio corner" caption="35mm, overcast." ratio="16/9" />
+ */
+
+interface Props {
+  /** Figure label, e.g. "Fig. 02" */
+  num: string;
+  /** Caption HTML string — em and other inline elements are allowed */
+  caption: string;
+  /** Placeholder text shown inside an empty frame */
+  label?: string;
+  /** Optional image URL; omit to render a placeholder frame */
+  src?: string;
+  /** Alt text for the image */
+  alt?: string;
+  /** CSS aspect-ratio applied to the frame — defaults to "4/3" */
+  ratio?: string;
+  /** Extra classes on the outer figure element */
+  class?: string;
+}
+
+const {
+  num,
+  caption,
+  label = '',
+  src,
+  alt = '',
+  ratio = '4/3',
+  class: className = '',
+} = Astro.props;
+---
+
+<style>
+  /* ::before can't be expressed as a Tailwind utility */
+  .placeholder::before {
+    content: attr(data-label);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-ink-3);
+  }
+</style>
+
+<figure class={`plate m-0 ${className}`}>
+  <div
+    class={`border border-ink bg-paper-2 grid place-items-center overflow-hidden relative ${!src ? 'placeholder' : ''}`}
+    style={`aspect-ratio: ${ratio}`}
+    data-label={!src ? label : undefined}
+  >
+    {src && <img class="w-full h-full object-cover" src={src} alt={alt} loading="lazy" decoding="async" />}
+  </div>
+  <figcaption class="mt-[0.625rem] font-mono text-[0.6875rem] tracking-[0.04em] text-ink-2 flex gap-[0.625rem]">
+    <span class="text-ink-3 shrink-0">{num}</span>
+    <span set:html={caption} />
+  </figcaption>
+</figure>
