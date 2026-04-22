@@ -1,5 +1,5 @@
 ---
-title: "On keeping a working notebook."
+title: "On keeping a working *notebook.*"
 description: "On unfinished work, honest captions, and the small courage of leaving a trail behind you."
 publishDate: 2026-04-12
 category: Essay

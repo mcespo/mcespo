@@ -8,7 +8,7 @@
  */
 
 interface Props {
-  currentPage?: 'home' | 'projects' | 'blog' | 'contact';
+  currentPage?: 'home' | 'projects' | 'posts' | 'contact';
   compact?: boolean;
 }
 
@@ -17,7 +17,7 @@ const { currentPage, compact = false } = Astro.props;
 const navLinks = [
   { href: '/',         label: 'Home',     id: 'home'     },
   { href: '/projects', label: 'Projects', id: 'projects' },
-  { href: '/blog',     label: 'Blog',     id: 'blog'     },
+  { href: '/posts',    label: 'Posts',    id: 'posts'    },
   { href: '/contact',  label: 'Say hi',   id: 'contact'  },
 ] as const;
 ---
@@ -27,7 +27,7 @@ const navLinks = [
   .nav a {
     padding-bottom: 0.125rem;
     border-bottom: 1px solid transparent;
-    transition: color .2s var(--ease), border-color .2s var(--ease);
+    transition: color .35s var(--ease), border-color .35s var(--ease);
 
     &:hover {
       color: var(--color-accent-2);
@@ -51,7 +51,9 @@ const navLinks = [
     cursor: pointer;
     line-height: 1.5;
     vertical-align: baseline;
-    transition: color .2s var(--ease), border-color .2s var(--ease);
+    min-width: 2.75rem;
+    text-align: center;
+    transition: color .35s var(--ease), border-color .35s var(--ease);
 
     &:hover {
       color: var(--color-accent-2);
@@ -91,32 +93,74 @@ const navLinks = [
 </header>
 
 <script>
-  const toggle = document.getElementById('dark-toggle') as HTMLButtonElement | null;
+  const toggle = document.getElementById('dark-toggle') as HTMLButtonElement;
   if (!toggle) throw new Error('dark-toggle not found');
 
   const KEY = 'mcespo.tweaks';
 
-  function getPrefs(): Record<string, boolean> {
+  function getPrefs(): Record<string, unknown> {
     try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch { return {}; }
   }
 
-  function setPrefs(p: Record<string, boolean>) {
+  function setPrefs(p: Record<string, unknown>) {
     localStorage.setItem(KEY, JSON.stringify(p));
   }
 
-  function syncButton() {
-    const dark = document.documentElement.classList.contains('dark');
-    toggle.setAttribute('aria-pressed', String(dark));
-    toggle.textContent = dark ? '☀' : '☾';
-    toggle.title = dark ? 'Switch to light mode' : 'Switch to dark mode';
+  function getAutoTheme(): 'dark' | 'light' {
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark';
+    if (window.matchMedia('(prefers-color-scheme: light)').matches) return 'light';
+    const h = new Date().getHours();
+    return (h >= 19 || h < 7) ? 'dark' : 'light';
+  }
+
+  function getMode(): 'auto' | 'dark' | 'light' {
+    const m = getPrefs().darkMode;
+    return m === 'dark' || m === 'light' ? m : 'auto';
+  }
+
+  function applyMode(mode: 'auto' | 'dark' | 'light') {
+    const dark = mode === 'auto' ? getAutoTheme() === 'dark' : mode === 'dark';
+    document.documentElement.classList.toggle('dark', dark);
+  }
+
+  function syncButton(mode: 'auto' | 'dark' | 'light') {
+    if (mode === 'auto') {
+      toggle.textContent = 'AUTO';
+      toggle.setAttribute('aria-pressed', 'false');
+      toggle.title = 'Auto theme – click to override';
+      toggle.setAttribute('aria-label', 'Auto theme – click to override');
+    } else if (mode === 'dark') {
+      toggle.textContent = '☀';
+      toggle.setAttribute('aria-pressed', 'true');
+      toggle.title = 'Dark mode – click for light';
+      toggle.setAttribute('aria-label', 'Switch to light mode');
+    } else {
+      toggle.textContent = '☾';
+      toggle.setAttribute('aria-pressed', 'false');
+      toggle.title = 'Light mode – click for dark';
+      toggle.setAttribute('aria-label', 'Switch to dark mode');
+    }
   }
 
   toggle.addEventListener('click', () => {
-    const dark = !document.documentElement.classList.contains('dark');
-    document.documentElement.classList.toggle('dark', dark);
-    setPrefs({ ...getPrefs(), dark });
-    syncButton();
+    const current = getMode();
+    // Cycle: auto → dark → light → auto
+    const next: 'auto' | 'dark' | 'light' =
+      current === 'auto' ? 'dark' : current === 'dark' ? 'light' : 'auto';
+    const prefs = getPrefs();
+    if (next === 'auto') { delete prefs.darkMode; } else { prefs.darkMode = next; }
+    setPrefs(prefs);
+    applyMode(next);
+    syncButton(next);
   });
 
-  syncButton();
+  syncButton(getMode());
+
+  // Re-apply when system preference changes, but only in auto mode
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    if (getMode() === 'auto') {
+      applyMode('auto');
+      syncButton('auto');
+    }
+  });
 </script>

@@ -1,11 +1,11 @@
 ---
 /**
- * Blog post — dynamic route for /blog/[slug].
+ * Post — dynamic route for /posts/[slug].
  *
  * Sections:
  *   1. Reading progress bar (fixed, accent-colored)
  *   2. Back link + kicker + post title + dek + byline
- *   3. Article body in the two-column reading shell
+ *   3. Article body in the single-column reading shell
  *   4. Footnotes (from Markdown)
  *   5. Post-end row (thanks + share links)
  *   6. Prev/next navigation
@@ -21,7 +21,7 @@ import SiteHeader from '../../components/SiteHeader.astro';
 import SiteFooter from '../../components/SiteFooter.astro';
 
 export async function getStaticPaths() {
-  const posts = await getCollection('blog', ({ data }) => !data.draft);
+  const posts = await getCollection('posts', ({ data }) => !data.draft);
   return posts.map((post) => ({
     /* Astro v5 glob loader uses entry.id as the slug */
     params: { slug: post.id },
@@ -30,8 +30,8 @@ export async function getStaticPaths() {
 }
 
 interface Props {
-  post: CollectionEntry<'blog'>;
-  allPosts: CollectionEntry<'blog'>[];
+  post: CollectionEntry<'posts'>;
+  allPosts: CollectionEntry<'posts'>[];
 }
 
 const { post, allPosts } = Astro.props;
@@ -58,7 +58,7 @@ const schema = {
   description: post.data.description,
   datePublished: post.data.publishDate.toISOString(),
   keywords: post.data.tags.join(', '),
-  url: new URL(`/blog/${post.id}`, Astro.site).href,
+  url: new URL(`/posts/${post.id}`, Astro.site).href,
   author: {
     '@type': 'Person',
     name: 'Marvin Céspedes',
@@ -132,6 +132,17 @@ function isoDate(d: Date) { return d.toISOString().slice(0, 10); }
     &:hover { background-size: 100% 1px; }
   }
 
+  /* Post title — Fraunces at maximum optical size */
+  .post-title {
+    font-weight: 350;
+    font-optical-sizing: none;
+    font-variation-settings: "opsz" 144, "SOFT" 50;
+  }
+
+  .post-title em {
+    color: var(--color-accent);
+  }
+
   /* Prev/next grid — collapses at narrow viewports */
   .prev-next {
     @media (width <= 40rem) {
@@ -142,19 +153,19 @@ function isoDate(d: Date) { return d.toISOString().slice(0, 10); }
 </style>
 
 <BaseLayout
-  title={`${post.data.title} — Marvin Céspedes`}
+  title={`${post.data.title.replace(/\*(.+?)\*/g, '$1')} — Marvin Céspedes`}
   description={post.data.description}
   schema={schema}
   showProgress={true}
 >
   <main class="site">
-    <SiteHeader currentPage="blog" compact />
+    <SiteHeader currentPage="posts" compact />
 
     <!-- ═══ Post header ═══════════════════════════════════════ -->
     <header class="max-w-[var(--measure)] mb-14">
       <!-- Back link — decorative rule extends on hover -->
-      <a class="back-link font-mono text-[0.6875rem] tracking-[0.1em] uppercase text-ink-2 no-underline inline-flex items-center gap-2 mb-10" href="/blog">
-        Back to blog
+      <a class="back-link font-mono text-[0.6875rem] tracking-[0.1em] uppercase text-ink-2 no-underline inline-flex items-center gap-2 mb-10" href="/posts">
+        Back to posts
       </a>
 
       <p class="post-kicker font-mono text-[0.6875rem] tracking-[0.12em] uppercase text-ink-2 m-0 mb-[1.125rem] flex items-center gap-[0.875rem]">
@@ -165,7 +176,7 @@ function isoDate(d: Date) { return d.toISOString().slice(0, 10); }
       </p>
 
       <h1
-        class="font-display font-normal leading-[1.04] tracking-[-0.02em] mb-[1.375rem] text-balance"
+        class="post-title font-display font-normal leading-[1.04] mb-[1.375rem] text-balance"
         style="font-size: clamp(2.5rem, 6vw, 4rem)"
         set:html={post.data.title.replace(/\*(.+?)\*/g, '<em>$1</em>')}
       />
@@ -198,20 +209,13 @@ function isoDate(d: Date) { return d.toISOString().slice(0, 10); }
       <div class="body prose">
         <Content />
       </div>
-
-      <aside class="gutter">
-        <span class="marker">aside</span>
-        A notebook without crossed-out pages is not a notebook — it's a
-        performance.
-        <div class="doodle">↙</div>
-      </aside>
     </article>
 
     <!-- ═══ Post end row ══════════════════════════════════════ -->
     <section class="max-w-[var(--measure)] mt-12 pt-7 border-t border-ink grid grid-cols-[1fr_auto] gap-6 items-baseline" aria-label="End of post">
       <p class="font-display italic text-[1.25rem] text-ink-2 m-0">Thanks for reading.</p>
       <div class="share font-mono text-[0.6875rem] tracking-[0.08em] uppercase text-ink-2 flex gap-4 no-underline">
-        <a class="no-underline" href={`mailto:?subject=${encodeURIComponent(post.data.title)}&body=${encodeURIComponent(new URL(`/blog/${post.id}`, Astro.site).href)}`}>Email</a>
+        <a class="no-underline" href={`mailto:?subject=${encodeURIComponent(post.data.title)}&body=${encodeURIComponent(new URL(`/posts/${post.id}`, Astro.site).href)}`}>Email</a>
         <a class="no-underline" href="/feed.xml">RSS</a>
       </div>
     </section>
@@ -220,14 +224,14 @@ function isoDate(d: Date) { return d.toISOString().slice(0, 10); }
     {(prev || next) && (
       <nav class="prev-next max-w-[var(--measure)] mt-12 mb-20 grid grid-cols-2 gap-6" aria-label="Post navigation">
         {prev ? (
-          <a href={`/blog/${prev.id}`} class="no-underline text-current pt-5 border-t border-ink block">
+          <a href={`/posts/${prev.id}`} class="no-underline text-current pt-5 border-t border-ink block">
             <div class="font-mono text-[0.625rem] tracking-[0.12em] uppercase text-ink-3 mb-[0.375rem] flex items-center gap-[0.375rem]">← Previous</div>
             <div class="font-display text-[1.25rem] leading-[1.2] tracking-[-0.005em] text-ink">{prev.data.title}</div>
           </a>
         ) : <span />}
 
         {next && (
-          <a href={`/blog/${next.id}`} class="next no-underline text-current pt-5 border-t border-ink block text-right">
+          <a href={`/posts/${next.id}`} class="next no-underline text-current pt-5 border-t border-ink block text-right">
             <div class="font-mono text-[0.625rem] tracking-[0.12em] uppercase text-ink-3 mb-[0.375rem] flex items-center justify-end gap-[0.375rem]">Next →</div>
             <div class="font-display text-[1.25rem] leading-[1.2] tracking-[-0.005em] text-ink">{next.data.title}</div>
           </a>
@@ -238,11 +242,11 @@ function isoDate(d: Date) { return d.toISOString().slice(0, 10); }
     <!-- ═══ Related posts ═════════════════════════════════════ -->
     {related.length > 0 && (
       <section class="max-w-[var(--measure)] mt-6 mb-20" aria-label="Related posts">
-        <h3 class="font-mono text-[0.6875rem] tracking-[0.12em] uppercase text-ink-3 m-0 mb-[1.125rem] font-medium">More from the blog</h3>
+        <h3 class="font-mono text-[0.6875rem] tracking-[0.12em] uppercase text-ink-3 m-0 mb-[1.125rem] font-medium">More posts</h3>
         <ol class="list-none p-0 m-0">
           {related.map((p) => (
             <li class="grid gap-5 py-[0.875rem] border-b border-dotted border-ink-3 last:border-none" style="grid-template-columns: 1fr 6.875rem">
-              <a class="related-link font-display text-[1.25rem] leading-[1.25] no-underline text-ink" href={`/blog/${p.id}`}>{p.data.title}</a>
+              <a class="related-link font-display text-[1.25rem] leading-[1.25] no-underline text-ink" href={`/posts/${p.id}`}>{p.data.title}</a>
               <span class="font-mono text-[0.6875rem] text-ink-3 text-right self-center tracking-[0.05em]">
                 <time datetime={isoDate(p.data.publishDate)}>
                   {p.data.publishDate.getFullYear()} ·{' '}
