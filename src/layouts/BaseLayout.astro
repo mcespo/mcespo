@@ -90,7 +90,23 @@ const ogImageUrl = ogImage ?? new URL('/og-default.jpg', siteUrl).href;
     (function () {
       try {
         var s = JSON.parse(localStorage.getItem('mcespo.tweaks') || '{}');
-        if (s.dark)        document.documentElement.classList.add('dark');
+        var dark;
+        if (s.darkMode === 'dark') {
+          dark = true;
+        } else if (s.darkMode === 'light') {
+          dark = false;
+        } else {
+          // Auto: system preference first, then time of day (7 pm – 7 am = dark)
+          if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            dark = true;
+          } else if (window.matchMedia('(prefers-color-scheme: light)').matches) {
+            dark = false;
+          } else {
+            var h = new Date().getHours();
+            dark = h >= 19 || h < 7;
+          }
+        }
+        if (dark)          document.documentElement.classList.add('dark');
         if (s.hideGutter)  document.documentElement.classList.add('hide-gutter');
       } catch (_) {}
     })();
