@@ -90,6 +90,42 @@ All animations and transitions must respect `prefers-reduced-motion`. See the pa
 
 ---
 
+## Commit convention
+
+Commits are linted on `git commit` via commitlint + husky. Use Conventional Commits format:
+
+```
+type(optional-scope): short description
+```
+
+| Type | Use for |
+|------|---------|
+| `feat` | New feature or visible content addition |
+| `fix` | Bug or visual defect correction |
+| `style` | CSS / visual change with no logic change |
+| `refactor` | Code restructure, no behavior change |
+| `chore` | Deps, config, tooling, build |
+| `docs` | Comments, copy, content edits |
+| `perf` | Performance improvement |
+| `revert` | Reverts a prior commit |
+
+Scopes are optional but encouraged for clarity: `feat(blog): add reading time`, `fix(header): dark toggle flicker`.
+
+The hook rejects any commit that doesn't match this format.
+
+### New machine setup
+
+Hooks are wired automatically — no manual step needed:
+
+```bash
+git clone <repo>
+npm install   # triggers "prepare": "husky" → installs .git/hooks/commit-msg
+```
+
+Everything required is committed: `.husky/commit-msg`, `commitlint.config.js`, and the `prepare` script in `package.json`.
+
+---
+
 ## File map
 
 | File | Owns |
