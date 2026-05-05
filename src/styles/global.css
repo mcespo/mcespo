@@ -22,10 +22,10 @@
   --color-code-bg:    oklch(93.8% 0.025 296);   /* #ece7f5 */
 
   /* Type stacks — generates font-display, font-body, font-mono, font-hand */
-  --font-display: "Fraunces", "Source Serif 4", Georgia, serif;
-  --font-body:    "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-display: "Caveat Brush", "Caveat", cursive;
+  --font-body:    "Newsreader", Georgia, "Times New Roman", serif;
   --font-mono:    "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
-  --font-hand:    "Caveat", "Kalam", cursive;
+  --font-hand:    "Caveat", cursive;
 }
 
 /* ── Design tokens ────────────────────────────────────────────
@@ -60,11 +60,14 @@
   --max-w:      62.5rem;   /* 1000px */
 
   /* Motion */
-  --ease: cubic-bezier(.2, .7, .2, 1);
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
 
   /* Background gradient wash — not exposed as Tailwind utilities */
   --wash-a: oklch(95.2% 0.013 296);   /* #f1eef7 */
   --wash-b: oklch(95.2% 0.013 62);    /* #f6eee7 */
+
+  /* Faint notebook baseline rule — layered on top of the animated gradient */
+  --baseline-rule: oklch(47.3% 0.186 289 / 0.055);
 }
 
 /* ── Dark mode ────────────────────────────────────────────────
@@ -86,6 +89,7 @@ html.dark {
   --color-code-bg:    oklch(14.8% 0.026 289);   /* #1c1a28 */
   --wash-a:           oklch(15.5% 0.025 289);   /* #1d1a2a */
   --wash-b:           oklch(20%   0.013 51);    /* #2a2220 */
+  --baseline-rule:    oklch(67.2% 0.177 289 / 0.04);
 }
 
 /* ── Reset ────────────────────────────────────────────────────*/
@@ -99,29 +103,40 @@ html, body { margin: 0; padding: 0; }
 html {
   background-color: var(--paper);
   color: var(--ink);
-  background-image: linear-gradient(
-    -45deg,
-    var(--wash-a)  0%,
-    var(--paper)  25%,
-    var(--wash-b) 50%,
-    var(--paper)  75%,
-    var(--wash-a) 100%
-  );
-  background-size: 300% 300%;
+  background-image:
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0 1.9375rem,
+      var(--baseline-rule) 1.9375rem 2rem
+    ),
+    linear-gradient(
+      -45deg,
+      var(--wash-a)  0%,
+      var(--paper)  25%,
+      var(--wash-b) 50%,
+      var(--paper)  75%,
+      var(--wash-a) 100%
+    );
+  background-size: auto, 300% 300%;
   animation: background-shift 24s ease-in-out infinite;
   scroll-behavior: smooth;
 }
 
 @keyframes background-shift {
-  0%   { background-position:   0% 50%; }
-  50%  { background-position: 100% 50%; }
-  100% { background-position:   0% 50%; }
+  0%   { background-position: 0 0,   0% 50%; }
+  50%  { background-position: 0 0, 100% 50%; }
+  100% { background-position: 0 0,   0% 50%; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   html {
     animation: none;
-    background-image: none;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent 0 1.9375rem,
+      var(--baseline-rule) 1.9375rem 2rem
+    );
+    background-size: auto;
     background-color: var(--paper);
     scroll-behavior: auto;
   }
@@ -165,7 +180,7 @@ a { color: inherit; }
 
   & > .gutter {
     font-family: var(--f-hand);
-    font-size: 1.125rem;
+    font-size: 1.375rem;
     line-height: 1.35;
     color: var(--ink-2);
     padding-top: 0.375rem;
@@ -174,8 +189,8 @@ a { color: inherit; }
 
     & .marker {
       font-family: var(--f-mono);
-      font-size: 0.625rem;
-      letter-spacing: 0.1em;
+      font-size: 0.6875rem;
+      letter-spacing: 0.18em;
       text-transform: uppercase;
       color: var(--ink-3);
       display: block;
@@ -230,13 +245,32 @@ html.hide-gutter {
 
   & a {
     color: var(--ink);
-    text-decoration: underline;
-    text-decoration-thickness: 1px;
-    text-decoration-color: var(--ink-3);
-    text-underline-offset: 0.1875rem;
-    transition: text-decoration-color .2s var(--ease), color .2s var(--ease);
+    text-decoration: none;
+    position: relative;
+    transition: color .35s var(--ease);
 
-    &:hover { text-decoration-color: var(--accent-2); color: var(--accent-2); }
+    &::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -0.3125rem;
+      height: 0.5625rem;
+      background: currentColor;
+      opacity: 0.5;
+      -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 10' preserveAspectRatio='none'%3E%3Cpath d='M 1 7 Q 25 3,50 6 T 99 7' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E");
+      mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 10' preserveAspectRatio='none'%3E%3Cpath d='M 1 7 Q 25 3,50 6 T 99 7' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E");
+      -webkit-mask-size: 100% 100%;
+      mask-size: 100% 100%;
+      pointer-events: none;
+      transition: opacity .35s var(--ease);
+    }
+
+    &:hover {
+      color: var(--accent-2);
+
+      &::after { opacity: 1; }
+    }
   }
 
   & em { font-style: italic; }
@@ -245,10 +279,9 @@ html.hide-gutter {
   & h2 {
     font-family: var(--f-display);
     font-weight: 400;
-    font-style: italic;
     font-size: 2rem;
     line-height: 1.15;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.005em;
     margin: 2.2em 0 0.6em;
     text-wrap: balance;
 
@@ -323,10 +356,10 @@ html.hide-gutter {
 
 /* ── Pull quote ───────────────────────────────────────────────*/
 .pullquote {
-  font-family: var(--f-display);
+  font-family: var(--f-body);
   font-weight: 400;
   font-style: italic;
-  font-size: clamp(1.625rem, 3vw, 2.125rem);
+  font-size: clamp(1.375rem, 2.5vw, 1.75rem);
   line-height: 1.25;
   letter-spacing: -0.005em;
   color: var(--ink);
@@ -441,7 +474,7 @@ aside.note {
 .fade-up {
   opacity: 0;
   transform: translateY(0.625rem);
-  transition: opacity .7s var(--ease), transform .7s var(--ease);
+  transition: opacity .35s var(--ease), transform .35s var(--ease);
 
   &.in { opacity: 1; transform: none; }
 
