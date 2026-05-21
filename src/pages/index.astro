@@ -1,138 +1,162 @@
 ---
 /**
- * Home — the index page for mcespo.com.
+ * Home — companion column layout.
  *
- * Sections (in order):
- *   1. Hero — display h1 + lede with a margin annotation
- *   2. Prose intro — short personal text
- *   3. Featured figure — a framed project image / placeholder
- *   4. Sticky note aside
- *   5. Recent work — numbered project table
- *   6. Colophon row — Elsewhere links + Currently block
- *   7. Footer
+ * Left column:  masthead + recent posts (up to 6) + archive link
+ * Right column: Now · Selected work · About + contact links
  *
- * Schema.org: WebSite + Person graph.
+ * Schema.org: WebSite + Person @graph.
  */
 
-import BaseLayout from "../layouts/BaseLayout.astro";
-import SiteHeader from "../components/SiteHeader.astro";
-import SiteFooter from "../components/SiteFooter.astro";
-import Plate from "../components/Plate.astro";
-import Note from "../components/Note.astro";
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
 
-/* ── Schema.org structured data ──────────────────────────────
-   Bundled as a @graph so a single <script> covers both types.
-   ─────────────────────────────────────────────────────────── */
+const posts = (await getCollection('posts', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf())
+  .slice(0, 6);
+
 const schema = {
-  "@context": "https://schema.org",
-  "@graph": [
+  '@context': 'https://schema.org',
+  '@graph': [
     {
-      "@type": "WebSite",
-      name: "Marvin Céspedes",
-      url: "https://mcespo.com",
-      description:
-        "Frontend-leaning fullstack developer, UX designer, photographer, occasional writer.",
-      author: { "@id": "#marvin" },
+      '@type': 'WebSite',
+      name: 'Marvin Céspedes',
+      url: 'https://mcespo.com',
+      description: 'Frontend-leaning fullstack developer, UX designer, photographer, occasional writer.',
+      author: { '@id': '#marvin' },
     },
     {
-      "@type": "Person",
-      "@id": "#marvin",
-      name: "Marvin Céspedes",
-      url: "https://mcespo.com",
-      email: "hi@mcespo.com",
-      sameAs: ["https://github.com/mcespo"],
+      '@type': 'Person',
+      '@id': '#marvin',
+      name: 'Marvin Céspedes',
+      url: 'https://mcespo.com',
+      email: 'hi@mcespo.com',
+      sameAs: ['https://github.com/mcespo'],
     },
   ],
 };
 
-/* ── Recent work — add real projects here ────────────────────*/
-const recentWork = [
+const selectedWork = [
   {
-    num: "01",
-    href: "/projects/project-name",
-    title: "[Project Name]",
-    subtitle: "A rewrite of the onboarding experience.",
-    role: "Product design",
-    year: "2025",
+    title: '[Project Name]',
+    role: 'Product design',
+    year: '2025',
+    href: '/projects/project-name',
   },
 ];
+
+function isoDate(d: Date) { return d.toISOString().slice(0, 10); }
+function shortDate(d: Date) {
+  return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+}
 ---
 
 <style>
-  /* ── Hero ─────────────────────────────────────────────────*/
+  /* ── Companion grid ────────────────────────────────────────*/
 
-  /* Kicker — rotated inline-block so it doesn't shift the grid */
-  .kicker {
-    display: inline-block;
-    transform: rotate(-1.5deg);
-    transform-origin: left;
-  }
+  .companion-grid {
+    display: grid;
+    grid-template-columns: 1fr 16.25rem;
+    column-gap: 4rem;
+    align-items: start;
 
-  /* Wordmark rotations — each line tilts independently */
-  .wm-1 {
-    display: inline-block;
-    transform: rotate(-1deg);
-  }
-  .wm-2 {
-    display: inline-block;
-    transform: rotate(0.6deg);
-  }
-
-  /* ── Recent work ──────────────────────────────────────────*/
-
-  /* Four-column layout: index · title+subtitle · role · year */
-  .work-row {
-    grid-template-columns: 3rem 1fr 8.75rem 6.875rem;
-
-    @media (width <= 45rem) {
-      grid-template-columns: 2.25rem 1fr 4.375rem;
-
-      & .role {
-        display: none;
-      }
+    @media (width <= 56rem) {
+      grid-template-columns: 1fr;
     }
   }
 
-  /* Animated underline drawn from left on hover */
-  .ttl a {
+  .companion {
+    padding-top: 7.5rem;
+
+    @media (width <= 56rem) {
+      padding-top: 3rem;
+    }
+  }
+
+  /* ── Masthead ───────────────────────────────────────────────*/
+
+  .masthead-title {
+    font-weight: 380;
+    font-optical-sizing: none;
+    font-variation-settings: "opsz" 144, "SOFT" 50;
+  }
+
+  .masthead-title em {
+    color: var(--color-accent);
+    font-style: italic;
+  }
+
+  /* ── Post list ──────────────────────────────────────────────*/
+
+  .post-row {
+    padding: 1.75rem 0;
+    border-top: 1px solid var(--color-ink-3);
+
+    &:first-child { border-top: none; }
+  }
+
+  .post-list-title {
+    font-weight: 350;
+    font-optical-sizing: none;
+    font-variation-settings: "opsz" 40, "SOFT" 20;
+  }
+
+  .post-list-title em {
+    color: var(--color-accent);
+    font-style: italic;
+  }
+
+  /* Animated underline on post title links */
+  .post-title-link {
     background-image: linear-gradient(var(--color-ink), var(--color-ink));
     background-size: 0% 1px;
     background-repeat: no-repeat;
     background-position: 0 100%;
-    transition: background-size 0.35s var(--ease);
+    transition: background-size .35s var(--ease);
     padding-bottom: 0.125rem;
 
-    &:hover {
-      background-size: 100% 1px;
-    }
+    &:hover { background-size: 100% 1px; }
   }
 
-  /* "All projects →" link — arrow slides right on hover */
-  .more {
-    transition: color 0.35s var(--ease);
+  /* Archive link — arrow slides right on hover */
+  .archive-link {
+    transition: color .2s var(--ease);
+
     &:hover {
       color: var(--color-accent-2);
-      & .arr {
-        transform: translateX(0.25rem);
-      }
+      & .arr { transform: translateX(0.25rem); }
     }
   }
+
   .arr {
     display: inline-block;
-    transition: transform 0.35s var(--ease);
+    transition: transform .2s var(--ease);
   }
 
-  /* ── Colophon ─────────────────────────────────────────────*/
+  /* ── Companion links ────────────────────────────────────────*/
 
-  .colophon-link {
+  .companion-link {
     border-bottom: 1px solid transparent;
-    transition:
-      border-color 0.35s var(--ease),
-      color 0.35s var(--ease);
+    transition: border-color .2s var(--ease), color .2s var(--ease);
+
     &:hover {
       border-color: var(--color-accent-2);
       color: var(--color-accent-2);
     }
+  }
+
+  /* Animated underline for work item links */
+  .work-title-link {
+    background-image: linear-gradient(var(--color-ink), var(--color-ink));
+    background-size: 0% 1px;
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    transition: background-size .35s var(--ease);
+    padding-bottom: 0.0625rem;
+
+    &:hover { background-size: 100% 1px; }
   }
 </style>
 
@@ -142,210 +166,170 @@ const recentWork = [
   schema={schema}
 >
   <main class="site">
-    <!-- ═══ Header ══════════════════════════════════════════ -->
     <SiteHeader currentPage="home" />
 
-    <!-- ═══ Hero ════════════════════════════════════════════
-         Two-column: display heading + lede / handwritten annotation
-         ─────────────────────────────────────────────────── -->
-    <section class="reading fade-up mb-[4.5rem]" aria-label="Introduction">
-      <div class="body">
-        <!-- Decorative greeting -->
-        <p
-          class="kicker font-hand text-[2.375rem] text-ink-3 mt-0 mb-[0.5rem] leading-[1]"
-          aria-hidden="true"
-        >
-          → howdy ~
+    <div class="companion-grid fade-up">
+
+      <!-- ═══ Left column ══════════════════════════════════════ -->
+      <div>
+
+        <!-- Eyebrow -->
+        <p class="font-mono text-[0.6875rem] tracking-[0.12em] uppercase text-ink-3 m-0 mb-5">
+          → A writing record · since 2017
         </p>
 
-        <!-- Display heading — hand-lettered Caveat Brush with per-line rotation -->
+        <!-- Masthead -->
         <h1
-          class="font-display font-normal leading-[0.9] tracking-[-0.005em] mb-7"
-          style="font-size: clamp(3rem, 8vw, 6rem)"
+          class="masthead-title font-display font-normal leading-[1.0] tracking-[-0.02em] m-0 mb-5"
+          style="font-size: clamp(3.5rem, 8vw, 5.75rem)"
         >
-          <span class="wm-1">Marvin</span><br />
-          <span class="wm-2 text-accent">Céspedes.</span>
+          The <em>notebook.</em>
         </h1>
 
+        <!-- Dek -->
         <p
-          class="font-body text-[1.375rem] leading-[1.5] text-ink mb-3 max-w-[34ch] text-pretty"
+          class="font-display italic text-ink-2 m-0 mb-12 max-w-[44ch] text-pretty leading-[1.4]"
+          style="font-size: clamp(1.125rem, 2vw, 1.375rem)"
         >
-          Web-person residing in Chicago, IL. I make websites, interfaces,
-          photographs, and occasionally bake bread.
+          Essays, code notes, process posts, and things I needed to write down.
         </p>
-      </div>
 
-    </section>
+        <!-- Section header -->
+        <div class="flex items-baseline justify-between mb-1 border-t border-ink pt-[0.625rem]">
+          <h2 class="font-mono text-[0.6875rem] tracking-[0.12em] uppercase text-ink-3 m-0 font-medium">
+            Recent writing
+          </h2>
+          <span class="font-mono text-[0.6875rem] tracking-[0.08em] text-ink-3">
+            {posts.length} {posts.length === 1 ? 'entry' : 'entries'}
+          </span>
+        </div>
 
-    <!-- ═══ Prose intro ══════════════════════════════════════ -->
-    <section class="reading" aria-label="Introduction prose">
-      <div class="body prose">
-        <p>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. I spend my
-          days on <a href="/projects">product design</a> for [COMPANY] and my evenings
-          on small things that have no client — a book jacket for a friend, a note-taking
-          tool for myself, a photograph that took seven tries to frame right.
-        </p>
-        <p>
-          What you'll find here is a working record. Unfinished pieces, honest
-          captions, and a few footnotes about what I'd do differently. The point
-          is the trail, not the trophy case.
-        </p>
-      </div>
+        <!-- Post list -->
+        <ol class="list-none p-0 m-0 mb-8 border-b border-ink-3" aria-label="Recent posts">
+          {posts.map((post) => (
+            <li class="post-row">
+              <div class="flex items-baseline gap-[0.625rem] mb-[0.375rem]">
+                <span class="font-mono text-[0.625rem] tracking-[0.1em] uppercase text-ink-3">
+                  {post.data.category}
+                </span>
+                {post.data.readingTime && (
+                  <span class="font-mono text-[0.625rem] tracking-[0.06em] text-ink-3">
+                    · {post.data.readingTime} min
+                  </span>
+                )}
+              </div>
 
-    </section>
-
-    <!-- ═══ Featured figure ══════════════════════════════════
-         Framed placeholder — swap src once you have imagery.
-         ─────────────────────────────────────────────────── -->
-    <section class="reading fade-up" aria-label="Featured project">
-      <div class="body">
-        <Plate
-          num="Fig. 02"
-          label="[ PROJECT HERO · 1600 × 1200 ]"
-          caption="<em>[Project Name]</em> — landing interface, final comp. 2025."
-          ratio="4/3"
-        />
-      </div>
-
-    </section>
-
-    <!-- ═══ Sticky aside ═════════════════════════════════════ -->
-    <Note label="A note in the margin">
-      psst — if you read to the end there's a small thing waiting. ↓
-    </Note>
-
-    <!-- ═══ Recent work ══════════════════════════════════════
-         Four columns: index · title+subtitle · role · year
-         Role column hidden on small screens via CSS.
-         ─────────────────────────────────────────────────── -->
-    <section class="mb-20" aria-label="Recent work">
-      <header
-        class="flex items-baseline justify-between pb-[0.625rem] border-b border-ink"
-      >
-        <h2
-          class="font-display font-normal text-[1.75rem] m-0 tracking-[-0.005em]"
-        >
-          Recent work
-        </h2>
-        <a
-          class="more font-mono text-[0.6875rem] tracking-[0.1em] uppercase text-ink-2 no-underline"
-          href="/projects"
-        >
-          All projects <span class="arr" aria-hidden="true">→</span>
-        </a>
-      </header>
-
-      <ol class="list-none p-0 m-0">
-        {
-          recentWork.map(({ num, href, title, subtitle, role, year }) => (
-            <li class="work-row fade-up grid gap-6 items-baseline py-[1.375rem] border-b border-ink-3 last:border-ink">
-              <span
-                class="num font-mono text-[0.6875rem] text-ink-3 tracking-[0.05em]"
-                aria-hidden="true"
+              <h3
+                class="post-list-title font-display font-normal leading-[1.15] tracking-[-0.01em] m-0 mb-1"
+                style="font-size: clamp(1.125rem, 2.5vw, 1.5rem)"
               >
-                {num}
-              </span>
-              <div class="ttl font-display text-[1.625rem] leading-[1.1] tracking-[-0.015em] font-normal">
-                <a class="no-underline" href={href}>
+                <a
+                  class="post-title-link no-underline text-ink"
+                  href={`/posts/${post.id}`}
+                  set:html={post.data.title.replace(/\*(.+?)\*/g, '<em>$1</em>')}
+                />
+              </h3>
+
+              <p class="font-body text-base text-ink-2 italic leading-[1.4] m-0 mb-[0.5rem] max-w-[52ch]">
+                {post.data.description}
+              </p>
+
+              <time
+                class="font-mono text-[0.625rem] tracking-[0.06em] text-ink-3 block"
+                datetime={isoDate(post.data.publishDate)}
+              >
+                {shortDate(post.data.publishDate)}
+              </time>
+            </li>
+          ))}
+        </ol>
+
+        <!-- Archive link -->
+        <a
+          class="archive-link font-mono text-[0.6875rem] tracking-[0.1em] uppercase text-ink-2 no-underline inline-flex items-center gap-2"
+          href="/posts"
+        >
+          See all posts <span class="arr" aria-hidden="true">→</span>
+        </a>
+
+      </div>
+
+      <!-- ═══ Right companion ══════════════════════════════════ -->
+      <aside class="companion" aria-label="About and links">
+
+        <!-- Now -->
+        <section class="mb-9" aria-label="What I'm doing now">
+          <h3 class="font-mono text-[0.6875rem] tracking-[0.12em] uppercase text-ink-3 m-0 mb-[0.875rem] font-medium">
+            Now
+          </h3>
+          <p class="text-[0.9375rem] leading-[1.6] text-ink-2 m-0 mb-3">
+            Working on [Project] at [Company]. Designing interfaces, writing
+            occasionally, baking bread with middling success.
+          </p>
+          <p class="text-[0.9375rem] leading-[1.6] text-ink-2 m-0">
+            Reading <em>[Book Title]</em>.
+          </p>
+        </section>
+
+        <!-- Selected work -->
+        <section class="mb-9" aria-label="Selected work">
+          <h3 class="font-mono text-[0.6875rem] tracking-[0.12em] uppercase text-ink-3 m-0 mb-[0.875rem] font-medium">
+            Selected work
+          </h3>
+          <ol class="list-none p-0 m-0">
+            {selectedWork.map(({ title, role, year, href }) => (
+              <li class="py-[0.625rem] border-b border-dotted border-ink-3 last:border-none">
+                <a
+                  class="work-title-link font-display text-[1rem] leading-[1.2] no-underline text-ink block mb-[0.25rem]"
+                  href={href}
+                >
                   {title}
                 </a>
-                <small class="font-body italic text-base text-ink-2 block mt-1 tracking-normal">
-                  {subtitle}
-                </small>
-              </div>
-              <span class="role font-mono text-[0.6875rem] tracking-[0.08em] uppercase text-ink-2">
-                {role}
-              </span>
-              <span class="yr font-mono text-[0.6875rem] tracking-[0.08em] text-ink-3 text-right">
-                <time datetime={year}>{year}</time>
-              </span>
+                <span class="font-mono text-[0.625rem] tracking-[0.08em] uppercase text-ink-3">
+                  {role} · <time datetime={year}>{year}</time>
+                </span>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        <!-- About -->
+        <section class="mb-9" aria-label="About">
+          <h3 class="font-mono text-[0.6875rem] tracking-[0.12em] uppercase text-ink-3 m-0 mb-[0.875rem] font-medium">
+            About
+          </h3>
+          <p class="text-[0.9375rem] leading-[1.6] text-ink-2 m-0 mb-5">
+            Web-person in Chicago, IL. I make websites, interfaces, and
+            photographs. Occasionally bake bread.
+          </p>
+          <ul class="list-none p-0 m-0 text-[0.9375rem] flex flex-col gap-[0.375rem]">
+            <li>
+              <a class="companion-link no-underline text-ink-2" href="mailto:hi@mcespo.com">
+                hi@mcespo.com
+              </a>
             </li>
-          ))
-        }
-      </ol>
-    </section>
+            <li>
+              <a class="companion-link no-underline text-ink-2" href="https://github.com/mcespo" rel="noopener noreferrer">
+                github
+              </a>
+            </li>
+            <li>
+              <a class="companion-link no-underline text-ink-2" href="https://read.cv/mcespo" rel="noopener noreferrer">
+                read.cv
+              </a>
+            </li>
+            <li>
+              <a class="companion-link no-underline text-ink-2" href="https://www.are.na/marvin-cespedes" rel="noopener noreferrer">
+                are.na
+              </a>
+            </li>
+          </ul>
+        </section>
 
-    <!-- ═══ Colophon row ═════════════════════════════════════
-         Two columns: Elsewhere links / Currently reading block
-         ─────────────────────────────────────────────────── -->
-    <section
-      class="colophon fade-up grid grid-cols-2 gap-12 pt-8 pb-2 border-t border-ink mb-10"
-      aria-label="Colophon"
-    >
-      <div>
-        <h3
-          class="font-mono text-[0.6875rem] tracking-[0.12em] uppercase text-ink-3 m-0 mb-[0.625rem] font-medium"
-        >
-          Elsewhere
-        </h3>
-        <ul class="list-none p-0 m-0 text-base">
-          <li
-            class="flex justify-between py-[0.375rem] border-b border-dotted border-ink-3"
-          >
-            <span class="text-ink-2 italic">email</span>
-            <a class="colophon-link no-underline" href="mailto:hi@mcespo.com"
-              >hi@mcespo.com</a
-            >
-          </li>
-          <li
-            class="flex justify-between py-[0.375rem] border-b border-dotted border-ink-3"
-          >
-            <span class="text-ink-2 italic">github</span>
-            <a
-              class="colophon-link no-underline"
-              href="https://github.com/mcespo"
-              rel="noopener noreferrer">@mcespo</a
-            >
-          </li>
-          <li
-            class="flex justify-between py-[0.375rem] border-b border-dotted border-ink-3"
-          >
-            <span class="text-ink-2 italic">read.cv</span>
-            <a
-              class="colophon-link no-underline"
-              href="https://read.cv/mcespo"
-              rel="noopener noreferrer">mcespo</a
-            >
-          </li>
-          <li
-            class="flex justify-between py-[0.375rem] border-b border-dotted border-ink-3"
-          >
-            <span class="text-ink-2 italic">are.na</span>
-            <a
-              class="colophon-link no-underline"
-              href="https://www.are.na/marvin-cespedes"
-              rel="noopener noreferrer">marvin-cespedes</a
-            >
-          </li>
-        </ul>
-      </div>
-
-      <div>
-        <h3
-          class="font-mono text-[0.6875rem] tracking-[0.12em] uppercase text-ink-3 m-0 mb-[0.625rem] font-medium"
-        >
-          Currently
-        </h3>
-        <p class="m-0 text-base leading-[1.5] max-w-[42ch]">
-          Reading <em>[Book Title]</em>, designing [Project] at [Company], and
-          learning to make better sourdough. Open to small collaborations in the
-          second half of the year.
-        </p>
-      </div>
-    </section>
+      </aside>
+    </div>
 
     <!-- ═══ Footer ══════════════════════════════════════════ -->
     <SiteFooter />
   </main>
 </BaseLayout>
-
-<style>
-  /* Colophon collapses to single column at narrow viewports */
-  .colophon {
-    @media (width <= 45rem) {
-      grid-template-columns: 1fr;
-      gap: 2rem;
-    }
-  }
-</style>
