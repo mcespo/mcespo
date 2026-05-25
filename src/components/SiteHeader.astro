@@ -1,4 +1,6 @@
 ---
+import LogoIcon from './LogoIcon.astro';
+
 /**
  * SiteHeader — the brand mark + primary navigation.
  *
@@ -64,7 +66,7 @@ const navLinks = [
 
 <header class={`flex items-baseline justify-between pt-8 pb-7 ${compact ? 'mb-12' : 'mb-[5.5rem]'}`}>
   <a class="flex items-baseline gap-3 no-underline" href="/">
-    <span class="font-display font-medium text-[1.75rem] leading-none tracking-[-0.02em]">m.</span>
+    <LogoIcon size="3rem" class="text-ink-2 translate-y-[40%]" />
     <span class="font-mono text-[0.6875rem] tracking-[0.12em] uppercase text-ink-2">Marvin Céspedes</span>
   </a>
 
