@@ -1,0 +1,158 @@
+---
+/**
+ * Stream — the reverse-chronological list of posts and notes.
+ *
+ * Posts show date · category, title, their opening paragraph and a
+ * "Continue reading" line; the whole block is clickable. Notes are
+ * untitled sticky cards rendered from their Markdown body.
+ *
+ * Props:
+ *   items      — stream items to render, already sorted
+ *   page/total — optional; renders the "Page N of M" row when total > 1
+ */
+
+import { render } from 'astro:content';
+import {
+  type StreamItem,
+  excerpt,
+  isoDate,
+  longDate,
+  pageHref,
+  readingMinutes,
+  shortDate,
+  titleHtml,
+} from '../lib/writing';
+
+interface Props {
+  items: StreamItem[];
+  page?: number;
+  total?: number;
+}
+
+const { items, page = 1, total = 1 } = Astro.props;
+
+const rendered = await Promise.all(
+  items.map(async (item) =>
+    item.kind === 'note' ? { ...item, Content: (await render(item.entry)).Content } : item,
+  ),
+);
+---
+
+<style>
+  /* ── Post ──────────────────────────────────────────────────*/
+  .entry {
+    position: relative;
+    padding: 3rem 0;
+    border-top: 1px solid var(--rule);
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+
+    & h2 {
+      font-size: 2.375rem;
+      line-height: 1.08;
+      letter-spacing: -0.015em;
+      transition: color .2s;
+
+      @media (width <= 37.5rem) { font-size: 1.875rem; }
+    }
+
+    /* Stretch the title link over the whole entry */
+    & h2 a::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+    }
+
+    & h2 a:hover { color: inherit; }
+
+    &:hover h2 { color: var(--accent); }
+
+    & .excerpt {
+      font-size: 1.25rem;
+      line-height: 1.65;
+      color: var(--ink-2);
+    }
+  }
+
+  .more {
+    font-size: 1.125rem;
+    color: var(--accent);
+  }
+
+  /* ── Note ──────────────────────────────────────────────────*/
+  .note-card {
+    background: var(--sticky);
+    color: var(--sticky-ink);
+    border-radius: 0.625rem;
+    padding: 1.5rem 1.75rem;
+    margin-bottom: 3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    transform: rotate(-0.4deg);
+
+    & .meta {
+      color: var(--sticky-ink);
+      opacity: 0.75;
+    }
+
+    & .body {
+      font-size: 1.1875rem;
+      line-height: 1.6;
+
+      & :global(p + p) { margin-top: 0.75rem; }
+      & :global(a) { text-decoration: underline; }
+      & :global(code) { background: color-mix(in oklch, var(--sticky-ink) 10%, transparent); }
+    }
+  }
+
+  /* ── Pagination ────────────────────────────────────────────*/
+  .pages {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 2rem 0;
+    border-top: 1px solid var(--rule);
+    font-size: 1.125rem;
+
+    & span { color: var(--ink-3); }
+
+    & div {
+      display: flex;
+      gap: 1.25rem;
+    }
+  }
+</style>
+
+{rendered.map((item) =>
+  item.kind === 'post' ? (
+    <article class="entry">
+      <p class="meta">
+        <time datetime={isoDate(item.entry.data.publishDate)}>{longDate(item.entry.data.publishDate)}</time>
+        · {item.entry.data.category}
+      </p>
+      <h2><a href={`/posts/${item.entry.id}`} set:html={titleHtml(item.entry.data.title)} /></h2>
+      <p class="excerpt">{excerpt(item.entry)}</p>
+      <span class="more">Continue reading, {readingMinutes(item.entry)} min</span>
+    </article>
+  ) : (
+    <article class="note-card" aria-label="A note">
+      <p class="meta">
+        <time datetime={isoDate(item.entry.data.publishDate)}>{shortDate(item.entry.data.publishDate)}</time>
+        · A note
+      </p>
+      <div class="body"><item.Content /></div>
+    </article>
+  ),
+)}
+
+{total > 1 && (
+  <nav class="pages" aria-label="Pagination">
+    <span>Page {page} of {total}</span>
+    <div>
+      {page > 1 && <a class="u" href={pageHref(page - 1)}>Newer posts</a>}
+      {page < total && <a class="u" href={pageHref(page + 1)}>Older posts</a>}
+    </div>
+  </nav>
+)}

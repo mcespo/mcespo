@@ -1,21 +1,20 @@
 ---
 /**
- * Home — companion column layout.
- *
- * Left column:  masthead + recent posts (up to 6) + archive link
- * Right column: Now · Selected work · About + contact links
+ * Home — personal intro, then page 1 of the writing stream
+ * (posts and notes, newest first). Later pages live at /page/[n].
  *
  * Schema.org: WebSite + Person @graph.
  */
 
-import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
+import Stream from '../components/Stream.astro';
+import { getStream, tagHref } from '../lib/writing';
+import { site } from '../site.config';
 
-const posts = (await getCollection('posts', ({ data }) => !data.draft))
-  .sort((a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf())
-  .slice(0, 6);
+const stream = await getStream();
+const total = Math.max(1, Math.ceil(stream.length / site.pageSize));
 
 const schema = {
   '@context': 'https://schema.org',
@@ -32,304 +31,37 @@ const schema = {
       '@id': '#marvin',
       name: 'Marvin Céspedes',
       url: 'https://mcespo.com',
-      email: 'hi@mcespo.com',
+      email: site.email,
       sameAs: ['https://github.com/mcespo'],
     },
   ],
 };
-
-const selectedWork = [
-  {
-    title: '[Project Name]',
-    role: 'Product design',
-    year: '2025',
-    href: '/projects/project-name',
-  },
-];
-
-function isoDate(d: Date) { return d.toISOString().slice(0, 10); }
-function shortDate(d: Date) {
-  return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-}
 ---
-
-<style>
-  /* ── Companion grid ────────────────────────────────────────*/
-
-  .companion-grid {
-    display: grid;
-    grid-template-columns: 1fr 16.25rem;
-    column-gap: 4rem;
-    align-items: start;
-
-    @media (width <= 56rem) {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  .companion {
-    padding-top: 7.5rem;
-
-    @media (width <= 56rem) {
-      padding-top: 3rem;
-    }
-  }
-
-  /* ── Masthead ───────────────────────────────────────────────*/
-
-  .masthead-title {
-    font-weight: 380;
-    font-optical-sizing: none;
-    font-variation-settings: "opsz" 144, "SOFT" 50;
-  }
-
-  .masthead-title em {
-    color: var(--color-accent);
-    font-style: italic;
-  }
-
-  /* ── Post list ──────────────────────────────────────────────*/
-
-  .post-row {
-    padding: 1.75rem 0;
-    border-top: 1px solid var(--color-ink-3);
-
-    &:first-child { border-top: none; }
-  }
-
-  .post-list-title {
-    font-weight: 350;
-    font-optical-sizing: none;
-    font-variation-settings: "opsz" 40, "SOFT" 20;
-  }
-
-  .post-list-title em {
-    color: var(--color-accent);
-    font-style: italic;
-  }
-
-  /* Animated underline on post title links */
-  .post-title-link {
-    background-image: linear-gradient(var(--color-ink), var(--color-ink));
-    background-size: 0% 1px;
-    background-repeat: no-repeat;
-    background-position: 0 100%;
-    transition: background-size .35s var(--ease);
-    padding-bottom: 0.125rem;
-
-    &:hover { background-size: 100% 1px; }
-  }
-
-  /* Archive link — arrow slides right on hover */
-  .archive-link {
-    transition: color .2s var(--ease);
-
-    &:hover {
-      color: var(--color-accent-2);
-      & .arr { transform: translateX(0.25rem); }
-    }
-  }
-
-  .arr {
-    display: inline-block;
-    transition: transform .2s var(--ease);
-  }
-
-  /* ── Companion links ────────────────────────────────────────*/
-
-  .companion-link {
-    border-bottom: 1px solid transparent;
-    transition: border-color .2s var(--ease), color .2s var(--ease);
-
-    &:hover {
-      border-color: var(--color-accent-2);
-      color: var(--color-accent-2);
-    }
-  }
-
-  /* Animated underline for work item links */
-  .work-title-link {
-    background-image: linear-gradient(var(--color-ink), var(--color-ink));
-    background-size: 0% 1px;
-    background-repeat: no-repeat;
-    background-position: 0 100%;
-    transition: background-size .35s var(--ease);
-    padding-bottom: 0.0625rem;
-
-    &:hover { background-size: 100% 1px; }
-  }
-</style>
 
 <BaseLayout
   title="Marvin Céspedes — Designer, Developer & overall web-person"
   description="Frontend-leaning fullstack developer, UX designer, photographer, occasional writer."
   schema={schema}
 >
-  <main class="site">
-    <SiteHeader currentPage="home" />
+  <div class="col">
+    <SiteHeader currentPage="writing" />
 
-    <div class="companion-grid fade-up">
-
-      <!-- ═══ Left column ══════════════════════════════════════ -->
-      <div>
-
-        <!-- Eyebrow -->
-        <p class="font-mono text-[0.6875rem] tracking-[0.12em] uppercase text-ink-3 m-0 mb-5">
-          → A writing record · since 2017
+    <main>
+      <section class="intro" aria-label="Introduction">
+        <h1>Hi, I’m Marvin.</h1>
+        <p>
+          I make websites in Chicago and write here about
+          <a class="u" href={tagHref('css')}>CSS</a>,
+          <a class="u" href={tagHref('process')}>how design actually gets made</a>,
+          and whatever I’m <a class="u" href={tagHref('learning')}>learning slowly</a>.
+          Some of it is finished.
         </p>
+        <p>Lately I’m designing at {site.now.company} and reading <em>{site.now.book}</em>.</p>
+      </section>
 
-        <!-- Masthead -->
-        <h1
-          class="masthead-title font-display font-normal leading-[1.0] tracking-[-0.02em] m-0 mb-5"
-          style="font-size: clamp(3.5rem, 8vw, 5.75rem)"
-        >
-          The <em>notebook.</em>
-        </h1>
+      <Stream items={stream.slice(0, site.pageSize)} page={1} total={total} />
+    </main>
 
-        <!-- Dek -->
-        <p
-          class="font-display italic text-ink-2 m-0 mb-12 max-w-[44ch] text-pretty leading-[1.4]"
-          style="font-size: clamp(1.125rem, 2vw, 1.375rem)"
-        >
-          Essays, code notes, process posts, and things I needed to write down.
-        </p>
-
-        <!-- Section header -->
-        <div class="flex items-baseline justify-between mb-1 border-t border-ink pt-[0.625rem]">
-          <h2 class="font-mono text-[0.6875rem] tracking-[0.12em] uppercase text-ink-3 m-0 font-medium">
-            Recent writing
-          </h2>
-          <span class="font-mono text-[0.6875rem] tracking-[0.08em] text-ink-3">
-            {posts.length} {posts.length === 1 ? 'entry' : 'entries'}
-          </span>
-        </div>
-
-        <!-- Post list -->
-        <ol class="list-none p-0 m-0 mb-8 border-b border-ink-3" aria-label="Recent posts">
-          {posts.map((post) => (
-            <li class="post-row">
-              <div class="flex items-baseline gap-[0.625rem] mb-[0.375rem]">
-                <span class="font-mono text-[0.625rem] tracking-[0.1em] uppercase text-ink-3">
-                  {post.data.category}
-                </span>
-                {post.data.readingTime && (
-                  <span class="font-mono text-[0.625rem] tracking-[0.06em] text-ink-3">
-                    · {post.data.readingTime} min
-                  </span>
-                )}
-              </div>
-
-              <h3
-                class="post-list-title font-display font-normal leading-[1.15] tracking-[-0.01em] m-0 mb-1"
-                style="font-size: clamp(1.125rem, 2.5vw, 1.5rem)"
-              >
-                <a
-                  class="post-title-link no-underline text-ink"
-                  href={`/posts/${post.id}`}
-                  set:html={post.data.title.replace(/\*(.+?)\*/g, '<em>$1</em>')}
-                />
-              </h3>
-
-              <p class="font-body text-base text-ink-2 italic leading-[1.4] m-0 mb-[0.5rem] max-w-[52ch]">
-                {post.data.description}
-              </p>
-
-              <time
-                class="font-mono text-[0.625rem] tracking-[0.06em] text-ink-3 block"
-                datetime={isoDate(post.data.publishDate)}
-              >
-                {shortDate(post.data.publishDate)}
-              </time>
-            </li>
-          ))}
-        </ol>
-
-        <!-- Archive link -->
-        <a
-          class="archive-link font-mono text-[0.6875rem] tracking-[0.1em] uppercase text-ink-2 no-underline inline-flex items-center gap-2"
-          href="/posts"
-        >
-          See all posts <span class="arr" aria-hidden="true">→</span>
-        </a>
-
-      </div>
-
-      <!-- ═══ Right companion ══════════════════════════════════ -->
-      <aside class="companion" aria-label="About and links">
-
-        <!-- Now -->
-        <section class="mb-9" aria-label="What I'm doing now">
-          <h3 class="font-mono text-[0.6875rem] tracking-[0.12em] uppercase text-ink-3 m-0 mb-[0.875rem] font-medium">
-            Now
-          </h3>
-          <p class="text-[0.9375rem] leading-[1.6] text-ink-2 m-0 mb-3">
-            Working on [Project] at [Company]. Designing interfaces, writing
-            occasionally, baking bread with middling success.
-          </p>
-          <p class="text-[0.9375rem] leading-[1.6] text-ink-2 m-0">
-            Reading <em>[Book Title]</em>.
-          </p>
-        </section>
-
-        <!-- Selected work -->
-        <section class="mb-9" aria-label="Selected work">
-          <h3 class="font-mono text-[0.6875rem] tracking-[0.12em] uppercase text-ink-3 m-0 mb-[0.875rem] font-medium">
-            Selected work
-          </h3>
-          <ol class="list-none p-0 m-0">
-            {selectedWork.map(({ title, role, year, href }) => (
-              <li class="py-[0.625rem] border-b border-dotted border-ink-3 last:border-none">
-                <a
-                  class="work-title-link font-display text-[1rem] leading-[1.2] no-underline text-ink block mb-[0.25rem]"
-                  href={href}
-                >
-                  {title}
-                </a>
-                <span class="font-mono text-[0.625rem] tracking-[0.08em] uppercase text-ink-3">
-                  {role} · <time datetime={year}>{year}</time>
-                </span>
-              </li>
-            ))}
-          </ol>
-        </section>
-
-        <!-- About -->
-        <section class="mb-9" aria-label="About">
-          <h3 class="font-mono text-[0.6875rem] tracking-[0.12em] uppercase text-ink-3 m-0 mb-[0.875rem] font-medium">
-            About
-          </h3>
-          <p class="text-[0.9375rem] leading-[1.6] text-ink-2 m-0 mb-5">
-            Web-person in Chicago, IL. I make websites, interfaces, and
-            photographs. Occasionally bake bread.
-          </p>
-          <ul class="list-none p-0 m-0 text-[0.9375rem] flex flex-col gap-[0.375rem]">
-            <li>
-              <a class="companion-link no-underline text-ink-2" href="mailto:hi@mcespo.com">
-                hi@mcespo.com
-              </a>
-            </li>
-            <li>
-              <a class="companion-link no-underline text-ink-2" href="https://github.com/mcespo" rel="noopener noreferrer">
-                github
-              </a>
-            </li>
-            <li>
-              <a class="companion-link no-underline text-ink-2" href="https://read.cv/mcespo" rel="noopener noreferrer">
-                read.cv
-              </a>
-            </li>
-            <li>
-              <a class="companion-link no-underline text-ink-2" href="https://www.are.na/marvin-cespedes" rel="noopener noreferrer">
-                are.na
-              </a>
-            </li>
-          </ul>
-        </section>
-
-      </aside>
-    </div>
-
-    <!-- ═══ Footer ══════════════════════════════════════════ -->
     <SiteFooter />
-  </main>
+  </div>
 </BaseLayout>

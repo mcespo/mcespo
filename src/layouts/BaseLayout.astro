@@ -22,8 +22,8 @@ interface Props {
   ogImage?: string;
   /** Schema.org JSON-LD object to embed in a <script type="application/ld+json"> */
   schema?: Record<string, unknown> | Record<string, unknown>[];
-  /** Show the reading progress bar (blog posts only) */
-  showProgress?: boolean;
+  /** og:type — "article" on posts */
+  ogType?: 'website' | 'article';
 }
 
 const {
@@ -32,7 +32,7 @@ const {
   canonical,
   ogImage,
   schema,
-  showProgress = false,
+  ogType = 'website',
 } = Astro.props;
 
 const siteUrl = Astro.site ?? new URL('https://mcespo.com');
@@ -56,7 +56,7 @@ const ogImageUrl = ogImage ?? new URL('/og-default.jpg', siteUrl).href;
   <meta property="og:description" content={description} />
   <meta property="og:url" content={canonicalUrl} />
   <meta property="og:image" content={ogImageUrl} />
-  <meta property="og:type" content="website" />
+  <meta property="og:type" content={ogType} />
   <meta property="og:site_name" content="Marvin Céspedes" />
 
   <!-- Twitter Card -->
@@ -68,11 +68,11 @@ const ogImageUrl = ogImage ?? new URL('/og-default.jpg', siteUrl).href;
   <!-- Feeds -->
   <link rel="alternate" type="application/rss+xml" title="Marvin Céspedes" href="/feed.xml" />
 
-  <!-- Google Fonts — four weights, two styles, loaded once -->
+  <!-- Google Fonts — Fraunces (display), Newsreader (body), JetBrains Mono (code only) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&family=Fraunces:ital,opsz,wght,SOFT@0,9..144,100..900,0..100;1,9..144,100..900,0..100&family=Caveat:wght@400..600&family=JetBrains+Mono:wght@400;500&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..700&family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=JetBrains+Mono:wght@400;500&display=swap"
     rel="stylesheet"
   />
 
@@ -113,13 +113,6 @@ const ogImageUrl = ogImage ?? new URL('/og-default.jpg', siteUrl).href;
 </head>
 
 <body>
-  <!-- Reading progress bar — only rendered on blog posts -->
-  {showProgress && (
-    <div class="progress" aria-hidden="true">
-      <div class="bar" id="progress-bar"></div>
-    </div>
-  )}
-
   <slot />
 
   <!--
@@ -140,21 +133,6 @@ const ogImageUrl = ogImage ?? new URL('/og-default.jpg', siteUrl).href;
       { rootMargin: '0px 0px -10% 0px', threshold: 0.1 },
     );
     document.querySelectorAll('.fade-up').forEach((el) => io.observe(el));
-  </script>
-
-  <!-- Reading progress bar script — only runs when the bar element exists -->
-  <script>
-    const bar = document.getElementById('progress-bar');
-    if (bar) {
-      function updateProgress() {
-        const h = document.documentElement;
-        const total = h.scrollHeight - h.clientHeight;
-        const pct = total > 0 ? Math.min(100, Math.max(0, (h.scrollTop / total) * 100)) : 0;
-        bar.style.width = pct + '%';
-      }
-      document.addEventListener('scroll', updateProgress, { passive: true });
-      updateProgress();
-    }
   </script>
 </body>
 </html>

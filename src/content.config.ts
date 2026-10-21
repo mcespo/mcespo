@@ -6,18 +6,28 @@ const posts = defineCollection({
   loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/posts' }),
   schema: z.object({
     title: z.string(),
+    /** Dek under the post title + meta description and OG */
     description: z.string(),
     publishDate: z.coerce.date(),
-    /** Display category shown in the post list and kicker, e.g. "Essay", "Note", "Code" */
+    /** Display category shown in the meta line, e.g. "Essay", "Code", "Process" */
     category: z.string().default('Essay'),
-    /** Estimated reading time in minutes — shown in the kicker and post list */
+    /** Reading time in minutes — estimated from word count when omitted */
     readingTime: z.number().optional(),
     tags: z.array(z.string()).default([]),
     draft: z.boolean().default(false),
-    /** Optional hero image shown at the top of the post and used for OG */
+    /** Optional OG image */
     heroImage: z.string().optional(),
     heroImageAlt: z.string().optional(),
   }),
 });
 
-export const collections = { posts };
+/* Short, untitled posts — shown as sticky cards in the writing stream, no detail page */
+const notes = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/notes' }),
+  schema: z.object({
+    publishDate: z.coerce.date(),
+    draft: z.boolean().default(false),
+  }),
+});
+
+export const collections = { posts, notes };

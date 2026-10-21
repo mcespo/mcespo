@@ -13,7 +13,7 @@ All font sizes, spacing, padding, margin, gap, width, height, and layout lengths
 The **only** exceptions where bare `px` is acceptable:
 - `1px`, `2px`, `3px` border widths (physical hairlines — rounding to rem would make them disappear or jump)
 - `height: 1px` decorative rules (same reason)
-- `height: 2px` progress bar (rendering artifact, not layout)
+- `text-decoration-thickness: 2px` on accent underlines (same reason)
 
 **Conversion reference** (root = 16px browser default):
 
@@ -92,7 +92,8 @@ For images embedded in blog posts, use the `Plate` component (adds a frame + cap
 
 ### Content collections
 - Config: `src/content.config.ts` (Astro v5 location)
-- All blog posts live in `src/content/blog/` — `.md` for plain prose, `.mdx` when a post needs inline components
+- All blog posts live in `src/content/posts/` — `.md` for plain prose, `.mdx` when a post needs inline components
+- Short untitled notes live in `src/content/notes/` — they appear as sticky cards in the writing stream, with no detail page
 - Use `render(post)` not `post.render()` — Astro v5 API
 - Use `entry.id` not `entry.slug` for URL generation with the glob loader
 
@@ -115,7 +116,7 @@ This site is **80–90% blog.** When making changes, the blog post experience is
 
 ### Creating a new post
 
-1. Create `src/content/blog/my-post-title.md` (or `.mdx` if components are needed inline).
+1. Create `src/content/posts/my-post-title.md` (or `.mdx` if components are needed inline).
 2. Add frontmatter — required fields are `title`, `description`, and `publishDate`.
 3. Write in Markdown. Use `.mdx` only when you need a component inline — don't default to MDX for every post.
 
@@ -123,42 +124,36 @@ This site is **80–90% blog.** When making changes, the blog post experience is
 ```yaml
 ---
 title: "The title of the post"
-description: "One or two sentence summary — used in the post list, meta description, and OG."
+description: "One or two sentence dek — shown under the title, and used for meta description and OG."
 publishDate: 2025-06-01
-category: Essay          # Essay · Note · Code · Process — shown in the kicker
-readingTime: 8           # minutes — optional, shown in the kicker and post list
-tags: [design, process]  # optional array — first tag shown in the byline
+category: Essay          # Essay · Code · Process — shown in the meta line, links to /tags/essay
+readingTime: 8           # minutes — optional, estimated from word count when omitted
+tags: [design, process]  # optional array — each gets a /tags/[tag] page
 draft: false             # true = excluded from build
-heroImage: /images/my-post-hero.jpg   # optional — post header + OG image
+heroImage: /images/my-post-hero.jpg   # optional — OG image
 heroImageAlt: "Alt text for the hero" # required if heroImage is set
 ---
 ```
 
+The post's **first paragraph** is used as its excerpt in the writing stream, so make it a good one.
+
+**Notes** — create `src/content/notes/some-slug.md` with just `publishDate` (and optional `draft`) in the frontmatter; the body is the note.
+
 ### Markdown patterns
 
-**Lead paragraph (drop cap):**
-```html
-<p class="lead">First paragraph gets a drop cap and larger type.</p>
+**Drop cap:** automatic on the first paragraph of every post. The "— Marvin" sign-off is added by the template.
+
+**Pull quote:** any Markdown blockquote renders as a centered pull quote that breaks out of the column:
+```md
+> The notebook isn't a record of what I knew. It's a record of how I found out.
 ```
+Add an attribution with HTML: `<blockquote>…<cite>— someone</cite></blockquote>`.
 
-**Pull quote:**
-```html
-<blockquote class="pullquote">
-  The thing about notebooks is they aren't for showing.
-  <cite>— someone</cite>
-</blockquote>
-```
+**Footnotes:** use GFM footnotes — they're styled and placed after the sign-off automatically:
+```md
+Something worth a footnote.[^1]
 
-**Footnotes:**
-```html
-Something worth a footnote.<sup class="fn"><a id="ref-1" href="#fn-1">1</a></sup>
-
-<div class="footnotes">
-  <h4>Notes</h4>
-  <ol>
-    <li id="fn-1">The footnote text. <a href="#ref-1">↩</a></li>
-  </ol>
-</div>
+[^1]: The footnote text.
 ```
 
 **Inline note/callout (prose only):**
@@ -200,7 +195,7 @@ Regular Markdown prose continues here.
 
 | Component | Use for | Key props |
 |-----------|---------|-----------|
-| `Plate` | Framed image or placeholder with caption | `src`, `alt`, `num`, `caption`, `ratio` |
+| `Plate` | Image or striped placeholder with italic caption; breaks out of the column | `src`, `alt`, `caption`, `label`, `num`, `ratio` |
 | `Note` | Sticky callout / aside | `label` |
 | `YouTubeEmbed` | YouTube video (privacy-safe, no cookies) | `id`, `title`, `start`, `caption` |
 | `VideoPlayer` | Self-hosted video | `src`, `poster`, `caption`, `ratio`, `autoplay`, `loop` |
@@ -257,12 +252,15 @@ For major-version bumps, review the changelog before updating.
 All tokens live in `src/styles/global.css` as CSS custom properties. Never hardcode a color or font stack inline in a component — always reference a token.
 
 ### Dark mode
-Toggled via `.dark` on `<html>` (not `prefers-color-scheme`). The user can override their OS setting. Preference is stored in `localStorage` under the key `mcespo.tweaks`.
+Toggled via `.dark` on `<html>` (not `prefers-color-scheme`). The header's Auto / Light / Dark pill lets the user override their OS setting; Auto follows the system preference, then time of day. Preference is stored in `localStorage` under the key `mcespo.tweaks` (`darkMode: 'dark' | 'light'`, absent = auto).
 
 The inline `is:inline` script in `BaseLayout.astro` reads localStorage and applies `.dark` before first paint — this prevents a flash of the wrong theme. Never remove or defer it.
 
-### Gutter column
-The `.reading` two-column grid collapses at `≤50rem` (`@media (max-width: 50rem)`) and can be hidden at any width by `html.hide-gutter`.
+### Layout
+Every page is one `.col` column (`42.5rem` max) holding `SiteHeader`, `<main>` and `SiteFooter`. Post bodies render into `<article class="art">` (styles in `global.css`). Breakpoints: `56.25rem` (pull quotes and figures stop breaking out) and `37.5rem` (smaller type).
+
+### Site config
+`src/site.config.ts` holds the email, the homepage "Now" line (company, book), stream page size, and the pinned tags linked from the homepage intro.
 
 ### Animations
 All animations and transitions must respect `prefers-reduced-motion`. See the pattern in `global.css`.
@@ -316,15 +314,23 @@ Everything required is committed: `.husky/commit-msg`, `commitlint.config.js`, a
 |------|------|
 | `src/styles/global.css` | All design tokens + site-wide patterns (reading grid, prose, animations) |
 | `src/layouts/BaseLayout.astro` | HTML shell, SEO meta, JSON-LD slot, dark-mode init, fade-up IO |
-| `src/components/SiteHeader.astro` | Brand mark, primary nav, dark mode toggle |
-| `src/components/SiteFooter.astro` | Copyright + RSS/Colophon links |
-| `src/components/Plate.astro` | Framed image or placeholder with mono caption |
+| `src/site.config.ts` | Email, "Now" line, page size, pinned tags |
+| `src/lib/writing.ts` | Stream/post queries, excerpt, reading time, date + tag helpers |
+| `src/components/SiteHeader.astro` | Brand mark, primary nav, Auto/Light/Dark theme pill |
+| `src/components/SiteFooter.astro` | Seal + sign-off with RSS/email links |
+| `src/components/Stream.astro` | Post entries, note cards, pagination row |
+| `src/components/ChicagoStars.astro` | Four-star ornament under post headers |
+| `src/components/LogoIcon.astro` | The seal, in `currentColor` |
+| `src/components/Plate.astro` | Image or striped placeholder with italic caption |
 | `src/components/Note.astro` | Sticky-note callout aside |
 | `src/components/YouTubeEmbed.astro` | Privacy-safe YouTube iframe with caption |
 | `src/components/VideoPlayer.astro` | Native `<video>` with poster + caption |
 | `src/content.config.ts` | Blog collection schema |
-| `src/content/blog/*.md` | Plain Markdown blog posts |
-| `src/content/blog/*.mdx` | Blog posts that need inline components |
-| `src/pages/index.astro` | Home page |
-| `src/pages/blog/index.astro` | Blog listing |
-| `src/pages/blog/[...slug].astro` | Blog post template |
+| `src/content/posts/*.md` | Plain Markdown blog posts |
+| `src/content/posts/*.mdx` | Blog posts that need inline components |
+| `src/content/notes/*.md` | Short untitled notes |
+| `src/pages/index.astro` | Home: intro + page 1 of the stream |
+| `src/pages/page/[page].astro` | Stream pages 2+ |
+| `src/pages/posts/index.astro` | Full archive |
+| `src/pages/posts/[...slug].astro` | Blog post template |
+| `src/pages/tags/[tag].astro` | Posts by tag or category |

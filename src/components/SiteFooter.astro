@@ -1,23 +1,38 @@
 ---
 /**
- * SiteFooter — copyright line + RSS and Colophon links.
- * The year is set server-side at build time.
+ * SiteFooter — the seal plus a short sign-off with RSS and email links.
  */
 
-const year = new Date().getFullYear();
+import LogoIcon from './LogoIcon.astro';
+import { site } from '../site.config';
 ---
 
 <style>
-  footer a {
-    transition: color .2s var(--ease);
-    &:hover { color: var(--color-accent-2); }
+  footer {
+    margin-top: 4.5rem;
+    padding: 3rem 0 5rem;
+    border-top: 1px solid var(--rule);
+    display: flex;
+    gap: 1.25rem;
+    align-items: flex-start;
+    font-size: 1.125rem;
+    line-height: 1.6;
+    color: var(--ink-2);
+
+    & :global(svg) {
+      flex: none;
+      color: var(--ink-3);
+    }
+
+    & a { color: var(--accent); }
   }
 </style>
 
-<footer class="flex justify-between items-baseline pt-[1.125rem] pb-8 font-mono text-[0.6875rem] tracking-[0.08em] text-ink-3">
-  <span>© {year} Marvin Céspedes</span>
-  <span>
-    <a class="text-ink-2 no-underline ml-[1.125rem]" href="/feed.xml">RSS</a>
-    <a class="text-ink-2 no-underline ml-[1.125rem]" href="/colophon">Colophon</a>
-  </span>
+<footer>
+  <LogoIcon size="2.25rem" />
+  <p>
+    Thanks for stopping by. This site is hand-built, has no tracking, and is
+    best read slowly. Follow by <a href="/feed.xml">RSS</a> or
+    <a href={`mailto:${site.email}`}>email</a>.
+  </p>
 </footer>

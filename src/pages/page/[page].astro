@@ -1,0 +1,47 @@
+---
+/**
+ * Writing stream, page 2 onward. Page 1 is the homepage.
+ */
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SiteHeader from '../../components/SiteHeader.astro';
+import SiteFooter from '../../components/SiteFooter.astro';
+import Stream from '../../components/Stream.astro';
+import { getStream } from '../../lib/writing';
+import { site } from '../../site.config';
+
+export async function getStaticPaths() {
+  const stream = await getStream();
+  const total = Math.ceil(stream.length / site.pageSize);
+
+  return Array.from({ length: Math.max(0, total - 1) }, (_, i) => {
+    const page = i + 2;
+    return {
+      params: { page: String(page) },
+      props: {
+        page,
+        total,
+        items: stream.slice((page - 1) * site.pageSize, page * site.pageSize),
+      },
+    };
+  });
+}
+
+const { page, total, items } = Astro.props;
+---
+
+<BaseLayout
+  title={`Writing, page ${page} — Marvin Céspedes`}
+  description="Essays, notes, and things I needed to write down."
+>
+  <div class="col">
+    <SiteHeader currentPage="writing" />
+
+    <main class="pt-16">
+      <h1 class="sr-only">Writing, page {page} of {total}</h1>
+      <Stream items={items} page={page} total={total} />
+    </main>
+
+    <SiteFooter />
+  </div>
+</BaseLayout>

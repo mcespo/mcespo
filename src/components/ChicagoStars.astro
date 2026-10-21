@@ -1,0 +1,27 @@
+---
+/**
+ * ChicagoStars — the four six-point stars of the Chicago flag,
+ * used as the ornament between a post's header and its body.
+ * Drawn in currentColor so the dark-mode red applies.
+ */
+---
+
+<style>
+  .stars {
+    display: flex;
+    justify-content: center;
+    gap: 1.125rem;
+    margin: 0.5rem 0 3rem;
+    color: var(--chi-red);
+
+    & svg { width: 1.125rem; height: 1.125rem; }
+  }
+</style>
+
+<div class="stars" aria-hidden="true">
+  {[0, 1, 2, 3].map(() => (
+    <svg viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2L14.3 8.02 20.66 7 16.6 12 20.66 17 14.3 15.98 12 22 9.7 15.98 3.34 17 7.4 12 3.34 7 9.7 8.02Z" />
+    </svg>
+  ))}
+</div>

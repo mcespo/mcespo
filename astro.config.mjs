@@ -12,5 +12,10 @@ export default defineConfig({
     plugins: [tailwindcss()],
   },
 
+  markdown: {
+    // Token colors come from --astro-code-* in global.css, so code follows the site palette + dark mode
+    shikiConfig: { theme: 'css-variables' },
+  },
+
   integrations: [mdx()],
 });
