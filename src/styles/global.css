@@ -1,36 +1,28 @@
 @import "tailwindcss";
 
-/* ── Tailwind theme ───────────────────────────────────────────
-   Exposes design tokens as Tailwind utilities.
-     text-ink, text-ink-2, text-ink-3
-     bg-paper, bg-paper-2, bg-accent, bg-code-bg …
-     font-display, font-body, font-mono
-   Dark mode overrides --color-* directly; the :root aliases
-   below ensure var(--ink) references update too.
-   ─────────────────────────────────────────────────────────── */
 @theme {
-  /* Ink + paper palette */
-  --color-ink:        oklch(13%   0.018 289);   /* #181620 headings, body */
-  --color-ink-2:      oklch(38.8% 0.025 290);   /* #4e4b5c secondary, excerpts */
-  --color-ink-3:      oklch(62.8% 0.021 295);   /* #9793a3 dates, meta */
+  --color-ink:        oklch(13%   0.018 289);   /* #181620 */
+  --color-ink-2:      oklch(38.8% 0.025 290);   /* #4e4b5c */
+  /* Darker than the design's 62.8% (#9793a3), which was ~3:1 on the background — this clears WCAG AA 4.5:1. */
+  --color-ink-3:      oklch(52.4% 0.021 295);
   --color-paper:      oklch(97.5% 0.004 295);   /* #f7f6f8 */
-  --color-paper-2:    oklch(94.4% 0.007 292);   /* #ecebef image placeholders */
-  --color-accent:     oklch(47.3% 0.186 289);   /* #6d4ac2 violet */
-  --color-accent-2:   oklch(64.5% 0.152 51);    /* #e07a2a orange — reserved */
-  --color-sticky:     oklch(90.6% 0.038 296);   /* #e7dff7 note cards, selection */
+  --color-paper-2:    oklch(94.4% 0.007 292);   /* #ecebef */
+  --color-accent:     oklch(47.3% 0.186 289);   /* #6d4ac2 */
+  --color-accent-2:   oklch(64.5% 0.152 51);    /* #e07a2a — reserved */
+  --color-sticky:     oklch(90.6% 0.038 296);   /* #e7dff7 */
   --color-sticky-ink: oklch(25.4% 0.112 289);   /* #3a2a6a */
   --color-code-bg:    oklch(93.8% 0.025 296);   /* #ece7f5 */
-  --color-chi-red:    oklch(58%   0.21  27);    /* Chicago-star ornament */
+  --color-chi-red:    oklch(58%   0.21  27);
 
-  /* Type stacks — generates font-display, font-body, font-mono */
-  --font-display: "Fraunces", Georgia, serif;
-  --font-body:    "Newsreader", Georgia, serif;
-  --font-mono:    "JetBrains Mono", ui-monospace, monospace;
+  /* The --font-* sources are self-hosted by Astro (see astro.config.mjs). */
+  --font-display: var(--font-fraunces);
+  --font-body:    var(--font-newsreader);
+  --font-mono:    var(--font-jetbrains);
 }
 
-/* ── Design tokens ────────────────────────────────────────────*/
 :root {
-  /* Color aliases → resolve through the @theme custom properties */
+  color-scheme: light;
+
   --ink:        var(--color-ink);
   --ink-2:      var(--color-ink-2);
   --ink-3:      var(--color-ink-3);
@@ -42,23 +34,15 @@
   --sticky-ink: var(--color-sticky-ink);
   --code-bg:    var(--color-code-bg);
   --chi-red:    var(--color-chi-red);
+  --rule:       color-mix(in oklch, var(--ink) 14%, transparent);
+  --wash-a:     oklch(94%   0.028 296);
+  --wash-b:     oklch(95.5% 0.025 60);
 
-  /* All hairlines */
-  --rule: color-mix(in oklch, var(--ink) 14%, transparent);
-
-  /* Font-stack aliases */
-  --f-display: var(--font-display);
-  --f-body:    var(--font-body);
-  --f-mono:    var(--font-mono);
-
-  /* Fraunces display axes — used on every display-face heading */
+  /* Fraunces display cut, used by every display-face heading. */
   --dv: "opsz" 144, "SOFT" 50, "WONK" 0;
 
-  /* Background gradient wash — not exposed as Tailwind utilities */
-  --wash-a: oklch(94%   0.028 296);   /* violet stop */
-  --wash-b: oklch(95.5% 0.025 60);    /* warm stop */
+  --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
 
-  /* Shiki `css-variables` theme → site tokens */
   --astro-code-foreground:              var(--ink);
   --astro-code-background:              var(--code-bg);
   --astro-code-token-comment:           var(--ink-3);
@@ -72,11 +56,10 @@
   --astro-code-token-link:              var(--accent);
 }
 
-/* ── Dark mode ────────────────────────────────────────────────
-   html.dark is toggled by the localStorage script in BaseLayout
-   before first paint — never use prefers-color-scheme instead.
-   ─────────────────────────────────────────────────────────── */
+/* A class rather than prefers-color-scheme so the header toggle can override the OS. */
 html.dark {
+  color-scheme: dark;
+
   --color-ink:        oklch(93%   0.012 295);
   --color-ink-2:      oklch(80%   0.02  295);
   --color-ink-3:      oklch(64%   0.02  295);
@@ -92,49 +75,49 @@ html.dark {
   --wash-b:           oklch(19.5% 0.025 50);
 }
 
-/* ── Page background ──────────────────────────────────────────
-   Grayscale fractal noise sits on top of a slow-drifting wash.
-   Noise only (no drift) for prefers-reduced-motion.
-   ─────────────────────────────────────────────────────────── */
 html {
   background-color: var(--paper);
   color: var(--ink);
+
+  @media (prefers-reduced-motion: no-preference) {
+    scroll-behavior: smooth;
+  }
+}
+
+/*
+ * The drifting wash lives on its own fixed layer so each animation frame
+ * repaints only this layer, not the page content, and scrolling repaints nothing.
+ */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  contain: strict;
   background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E"),
-    linear-gradient(
-      -45deg,
-      var(--wash-a)  0%,
-      var(--paper)  25%,
-      var(--wash-b) 50%,
-      var(--paper)  75%,
-      var(--wash-a) 100%
-    );
+    var(--noise),
+    linear-gradient(-45deg, var(--wash-a) 0%, var(--paper) 25%, var(--wash-b) 50%, var(--paper) 75%, var(--wash-a) 100%);
   background-size: 12.5rem 12.5rem, 300% 300%;
-  background-attachment: fixed;
   animation: background-shift 24s ease-in-out infinite;
-  scroll-behavior: smooth;
 
   @media (prefers-reduced-motion: reduce) {
     animation: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+    background-image: var(--noise);
     background-size: 12.5rem 12.5rem;
-    scroll-behavior: auto;
   }
 }
 
 @keyframes background-shift {
-  0%   { background-position: 0 0,   0% 50%; }
-  50%  { background-position: 0 0, 100% 50%; }
-  100% { background-position: 0 0,   0% 50%; }
+  0%, 100% { background-position: 0 0,   0% 50%; }
+  50%      { background-position: 0 0, 100% 50%; }
 }
 
-/* ── Base elements ────────────────────────────────────────────
-   Layered so Tailwind utilities can still override them.
-   ─────────────────────────────────────────────────────────── */
+/* Layered so Tailwind utilities can still override element defaults. */
 @layer base {
   body {
     margin: 0;
-    font-family: var(--f-body);
+    font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
     transition: color .3s;
   }
@@ -146,8 +129,14 @@ html {
     &:hover { color: var(--accent); }
   }
 
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 0.1875rem;
+    border-radius: 0.125rem;
+  }
+
   h1, h2 {
-    font-family: var(--f-display);
+    font-family: var(--font-display);
     font-variation-settings: var(--dv);
     font-weight: 400;
     margin: 0;
@@ -159,9 +148,8 @@ html {
     text-wrap: pretty;
   }
 
-  /* Inline code — blocks reset this inside pre */
   code {
-    font-family: var(--f-mono);
+    font-family: var(--font-mono);
     font-size: 0.82em;
     background: var(--code-bg);
     padding: 0.0625rem 0.3125rem;
@@ -174,40 +162,49 @@ html {
   }
 }
 
-/* ── Site column ──────────────────────────────────────────────
-   One column holds header, main and footer on every page.
-   ─────────────────────────────────────────────────────────── */
 .col {
-  max-width: 42.5rem;
-  margin: 0 auto;
-  padding: 0 2rem;
+  max-inline-size: 42.5rem;
+  margin-inline: auto;
+  padding-inline: 2rem;
 }
 
-/* ── Accent-underlined link ───────────────────────────────────*/
+.skip-link {
+  position: absolute;
+  inset-block-start: 1rem;
+  inset-inline-start: 1rem;
+  z-index: 10;
+  padding: 0.5rem 1rem;
+  border-radius: 999rem;
+  background: var(--ink);
+  color: var(--paper);
+  translate: 0 -200%;
+
+  &:focus-visible { translate: none; }
+}
+
+/* Accent underline — the only cue for links set in body color. */
 .u {
   text-decoration: underline;
   text-decoration-color: var(--accent);
-  text-decoration-thickness: 2px;   /* hairline — keep px */
+  text-decoration-thickness: 2px;
   text-underline-offset: 0.3125rem;
 }
 
-/* ── Meta line — dates, categories, page counts ───────────────*/
 .meta {
   font-size: 1rem;
   font-style: italic;
   color: var(--ink-3);
 }
 
-/* ── Page intro — big greeting + lede (home, listings) ────────*/
 .intro {
-  padding: 6rem 0 4rem;
+  padding-block: 6rem 4rem;
 
   & h1 {
     font-size: 4rem;
     line-height: 1;
     letter-spacing: -0.02em;
     font-weight: 380;
-    margin-bottom: 1.75rem;
+    margin-block-end: 1.75rem;
   }
 
   & p {
@@ -216,7 +213,7 @@ html {
   }
 
   & p + p {
-    margin-top: 1.125rem;
+    margin-block-start: 1.125rem;
     color: var(--ink-2);
   }
 
@@ -226,121 +223,118 @@ html {
   }
 }
 
-/* ── Article body ─────────────────────────────────────────────
-   Markdown / MDX is rendered into <article class="art">.
-   Flex column so the template's sign-off can sit above the
-   GFM footnotes section that Markdown appends last.
-   ─────────────────────────────────────────────────────────── */
+/*
+ * Post body. Flex column so the template's sign-off can sit above the
+ * footnotes Markdown appends last; flex margins don't collapse, so the
+ * space after breakout elements goes on the next sibling.
+ */
 .art {
   display: flex;
   flex-direction: column;
   font-size: 1.3125rem;
   line-height: 1.7;
 
-  & > * + * { margin-top: 1.625rem; }
+  & > * + * { margin-block-start: 1.625rem; }
 
-  /* Drop cap on the opening paragraph */
   & > p:first-child::first-letter {
-    font-family: var(--f-display);
+    font-family: var(--font-display);
     font-variation-settings: var(--dv);
-    float: left;
+    float: inline-start;
     font-size: 5.75rem;
     line-height: 0.8;
-    padding: 0.5rem 0.75rem 0 0;
+    padding-block-start: 0.5rem;
+    padding-inline-end: 0.75rem;
     color: var(--accent);
   }
 
   & h2 {
     font-size: 1.875rem;
     line-height: 1.15;
-    margin-top: 3.5rem;
+    margin-block-start: 3.5rem;
   }
 
   & h3 {
-    font-family: var(--f-display);
+    font-family: var(--font-display);
     font-variation-settings: var(--dv);
     font-weight: 400;
     font-size: 1.5rem;
     line-height: 1.2;
-    margin-top: 2.5rem;
+    margin-block-start: 2.5rem;
     text-wrap: balance;
   }
 
   & a {
     text-decoration: underline;
     text-decoration-color: var(--accent);
-    text-decoration-thickness: 2px;   /* hairline — keep px */
+    text-decoration-thickness: 2px;
     text-underline-offset: 0.25rem;
   }
 
-  & ul, & ol {
-    margin-bottom: 0;
-    padding-left: 1.4em;
+  & :is(ul, ol) {
+    padding-inline-start: 1.4em;
 
-    & li + li { margin-top: 0.5em; }
+    & li + li { margin-block-start: 0.5em; }
   }
   & ul { list-style: disc; }
   & ol { list-style: decimal; }
 
   & strong { font-weight: 600; }
 
-  /* Pull quote — plain Markdown `>` or <blockquote class="pullquote"> */
-  /* Flex items don't collapse margins — the gap after breakouts
-     is set on the following sibling instead */
   & blockquote {
-    margin: 3.5rem -5rem 0;
-    padding: 2rem 0;
+    margin-block-start: 3.5rem;
+    margin-inline: -5rem;
+    padding-block: 2rem;
     border-block: 1px solid var(--ink);
-    font-family: var(--f-display);
+    font-family: var(--font-display);
     font-variation-settings: var(--dv);
     font-size: 2.25rem;
     line-height: 1.2;
     font-weight: 350;
     text-align: center;
-    text-wrap: balance;
 
     & p { text-wrap: balance; }
 
     & cite {
       display: block;
-      margin-top: 1rem;
-      font-family: var(--f-body);
+      margin-block-start: 1rem;
+      font-family: var(--font-body);
       font-size: 1rem;
       font-style: italic;
       color: var(--ink-3);
     }
   }
-  & blockquote + * { margin-top: 3.5rem; }
+  & blockquote + * { margin-block-start: 3.5rem; }
 
   & pre {
-    font-family: var(--f-mono);
+    font-family: var(--font-mono);
+    background: var(--code-bg);
     font-size: 0.9375rem;
     line-height: 1.65;
-    background: var(--code-bg);
     padding: 1.25rem 1.5rem;
     border-radius: 0.5rem;
     overflow: auto;
 
     & code {
       font-size: inherit;
-      background: transparent;
+      background: none;
       padding: 0;
-      border-radius: 0;
     }
   }
 
-  & figure { margin: 3rem -7.5rem 0; }
-  & figure + * { margin-top: 3rem; }
+  & figure {
+    margin-block-start: 3rem;
+    margin-inline: -7.5rem;
+  }
+  & figure + * { margin-block-start: 3rem; }
 
   & figcaption {
     font-size: 1rem;
     font-style: italic;
     color: var(--ink-2);
     text-align: center;
-    margin-top: 0.75rem;
+    margin-block-start: 0.75rem;
   }
 
-  /* Footnote references (GFM `[^1]` or hand-written <sup>) */
   & sup a {
     color: var(--accent);
     font-weight: 600;
@@ -348,31 +342,28 @@ html {
     text-decoration: none;
   }
 
-  /* Template sign-off sits above the footnotes */
   & .sign {
     order: 1;
-    font-family: var(--f-display);
+    font-family: var(--font-display);
     font-style: italic;
     font-size: 1.875rem;
-    margin-top: 2.5rem;
+    margin-block-start: 2.5rem;
   }
 
-  /* GFM footnotes section (and hand-written .footnotes) */
   & .footnotes {
     order: 2;
-    margin-top: 4rem;
-    padding-top: 1.75rem;
-    border-top: 1px solid var(--rule);
+    margin-block-start: 4rem;
+    padding-block-start: 1.75rem;
+    border-block-start: 1px solid var(--rule);
     font-size: 1rem;
     line-height: 1.6;
     color: var(--ink-2);
 
-    /* GFM's "Footnotes" label — screen readers only */
-    & #footnote-label,
-    & h4 {
+    /* GFM's "Footnotes" heading: kept for screen readers, hidden visually. */
+    & #footnote-label {
       position: absolute;
-      width: 1px;
-      height: 1px;
+      inline-size: 1px;
+      block-size: 1px;
       overflow: hidden;
       clip-path: inset(50%);
       white-space: nowrap;
@@ -381,19 +372,18 @@ html {
     & ol {
       list-style: none;
       padding: 0;
-      margin: 0;
       display: flex;
       flex-direction: column;
       gap: 0.625rem;
     }
 
-    & li + li { margin-top: 0; }
+    & li + li { margin-block-start: 0; }
 
     & li::before {
       content: counter(list-item);
       color: var(--accent);
       font-weight: 700;
-      margin-right: 0.375rem;
+      margin-inline-end: 0.375rem;
     }
 
     & li > p { display: inline; }
@@ -403,9 +393,9 @@ html {
 
   @media (width <= 56.25rem) {
     & blockquote { margin: 3rem 0 0; }
-    & blockquote + * { margin-top: 3rem; }
+    & blockquote + * { margin-block-start: 3rem; }
     & figure { margin: 2.5rem 0 0; }
-    & figure + * { margin-top: 2.5rem; }
+    & figure + * { margin-block-start: 2.5rem; }
   }
 
   @media (width <= 37.5rem) {
@@ -415,7 +405,7 @@ html {
   }
 }
 
-/* ── Sticky note callout (Note.astro) ─────────────────────────*/
+/* Note.astro — matches the note cards in the writing stream. */
 aside.note {
   background: var(--sticky);
   color: var(--sticky-ink);
@@ -424,7 +414,7 @@ aside.note {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  transform: rotate(-0.4deg);
+  rotate: -0.4deg;
 
   & .label {
     font-size: 1rem;
@@ -438,21 +428,4 @@ aside.note {
   }
 
   & code { background: color-mix(in oklch, var(--sticky-ink) 10%, transparent); }
-}
-
-/* ── Fade-up entrance animation ───────────────────────────────
-   .in is added by the IntersectionObserver in BaseLayout.
-   ─────────────────────────────────────────────────────────── */
-.fade-up {
-  opacity: 0;
-  transform: translateY(0.625rem);
-  transition: opacity .35s ease, transform .35s ease;
-
-  &.in { opacity: 1; transform: none; }
-
-  @media (prefers-reduced-motion: reduce) {
-    opacity: 1;
-    transform: none;
-    transition: none;
-  }
 }

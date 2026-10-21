@@ -1,59 +1,32 @@
 ---
-/**
- * VideoPlayer — native <video> with a caption.
- *
- * Preloads only metadata (poster + duration) — the full file is
- * fetched only when the user presses play.
- *
- * Usage in .mdx:
- *   import VideoPlayer from '../../components/VideoPlayer.astro'
- *   <VideoPlayer src="/video/demo.mp4" poster="/video/demo-poster.jpg" caption="App walkthrough, 90s." />
- */
-
 interface Props {
-  /** Path or URL to the video file */
   src: string;
-  /** Path or URL to a poster image shown before play */
   poster?: string;
-  /** Caption shown below the player */
   caption?: string;
-  /** CSS aspect-ratio — defaults to "16/9" */
   ratio?: string;
-  /** Mutes and autoplays the video (useful for silent loops / demos) */
+  /** Autoplay is always muted; browsers block it otherwise. */
   autoplay?: boolean;
-  /** Loops the video — combine with autoplay for ambient clips */
   loop?: boolean;
 }
 
-const {
-  src,
-  poster,
-  caption,
-  ratio = '16/9',
-  autoplay = false,
-  loop = false,
-} = Astro.props;
+const { src, poster, caption, ratio = '16/9', autoplay = false, loop = false } = Astro.props;
 ---
 
 <figure>
+  <!-- preload="metadata" fetches only the poster frame and duration until someone presses play. -->
   <video
     {src}
     {poster}
     controls
     playsinline
     preload="metadata"
-    autoplay={autoplay || undefined}
-    loop={loop || undefined}
-    muted={autoplay || undefined}
+    autoplay={autoplay}
+    muted={autoplay}
+    loop={loop}
     class="w-full rounded-[0.375rem]"
     style={`aspect-ratio: ${ratio}`}
   >
-    Your browser doesn't support HTML video.
-    <a href={src}>Download the video</a> instead.
+    <a href={src}>Download the video</a>
   </video>
-  {caption && (
-    <figcaption>
-      {caption}
-    </figcaption>
-  )}
+  {caption && <figcaption>{caption}</figcaption>}
 </figure>

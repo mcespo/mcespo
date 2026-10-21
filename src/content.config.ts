@@ -1,27 +1,27 @@
-import { defineCollection, z } from 'astro:content';
+import { defineCollection } from 'astro:content';
+import { z } from 'astro/zod';
 import { glob } from 'astro/loaders';
 
 const posts = defineCollection({
-  /* Picks up both .md and .mdx — use .mdx when a post needs inline components */
   loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/posts' }),
   schema: z.object({
     title: z.string(),
-    /** Dek under the post title + meta description and OG */
     description: z.string(),
     publishDate: z.coerce.date(),
-    /** Display category shown in the meta line, e.g. "Essay", "Code", "Process" */
     category: z.string().default('Essay'),
-    /** Reading time in minutes — estimated from word count when omitted */
+    /** Minutes; estimated from word count when omitted. */
     readingTime: z.number().optional(),
     tags: z.array(z.string()).default([]),
     draft: z.boolean().default(false),
-    /** Optional OG image */
     heroImage: z.string().optional(),
     heroImageAlt: z.string().optional(),
+  }).refine((d) => !d.heroImage || d.heroImageAlt, {
+    message: 'heroImageAlt is required when heroImage is set',
+    path: ['heroImageAlt'],
   }),
 });
 
-/* Short, untitled posts — shown as sticky cards in the writing stream, no detail page */
+// Untitled short posts: sticky cards in the stream, with no page of their own.
 const notes = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/notes' }),
   schema: z.object({

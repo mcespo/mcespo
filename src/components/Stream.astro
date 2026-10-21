@@ -1,16 +1,4 @@
 ---
-/**
- * Stream — the reverse-chronological list of posts and notes.
- *
- * Posts show date · category, title, their opening paragraph and a
- * "Continue reading" line; the whole block is clickable. Notes are
- * untitled sticky cards rendered from their Markdown body.
- *
- * Props:
- *   items      — stream items to render, already sorted
- *   page/total — optional; renders the "Page N of M" row when total > 1
- */
-
 import { render } from 'astro:content';
 import {
   type StreamItem,
@@ -24,7 +12,9 @@ import {
 } from '../lib/writing';
 
 interface Props {
+  /** Already sorted, newest first. */
   items: StreamItem[];
+  /** The pagination row only renders when there's more than one page. */
   page?: number;
   total?: number;
 }
@@ -39,11 +29,10 @@ const rendered = await Promise.all(
 ---
 
 <style>
-  /* ── Post ──────────────────────────────────────────────────*/
   .entry {
     position: relative;
-    padding: 3rem 0;
-    border-top: 1px solid var(--rule);
+    padding-block: 3rem;
+    border-block-start: 1px solid var(--rule);
     display: flex;
     flex-direction: column;
     gap: 0.875rem;
@@ -57,7 +46,7 @@ const rendered = await Promise.all(
       @media (width <= 37.5rem) { font-size: 1.875rem; }
     }
 
-    /* Stretch the title link over the whole entry */
+    /* Stretches the title link over the whole card, so there's one link per post for screen readers. */
     & h2 a::after {
       content: "";
       position: absolute;
@@ -67,12 +56,12 @@ const rendered = await Promise.all(
     & h2 a:hover { color: inherit; }
 
     &:hover h2 { color: var(--accent); }
+  }
 
-    & .excerpt {
-      font-size: 1.25rem;
-      line-height: 1.65;
-      color: var(--ink-2);
-    }
+  .excerpt {
+    font-size: 1.25rem;
+    line-height: 1.65;
+    color: var(--ink-2);
   }
 
   .more {
@@ -80,43 +69,41 @@ const rendered = await Promise.all(
     color: var(--accent);
   }
 
-  /* ── Note ──────────────────────────────────────────────────*/
   .note-card {
     background: var(--sticky);
     color: var(--sticky-ink);
     border-radius: 0.625rem;
     padding: 1.5rem 1.75rem;
-    margin-bottom: 3rem;
+    margin-block-end: 3rem;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    transform: rotate(-0.4deg);
+    rotate: -0.4deg;
 
     & .meta {
       color: var(--sticky-ink);
       opacity: 0.75;
     }
-
-    & .body {
-      font-size: 1.1875rem;
-      line-height: 1.6;
-
-      & :global(p + p) { margin-top: 0.75rem; }
-      & :global(a) { text-decoration: underline; }
-      & :global(code) { background: color-mix(in oklch, var(--sticky-ink) 10%, transparent); }
-    }
   }
 
-  /* ── Pagination ────────────────────────────────────────────*/
+  .body {
+    font-size: 1.1875rem;
+    line-height: 1.6;
+
+    & :global(p + p) { margin-block-start: 0.75rem; }
+    & :global(a) { text-decoration: underline; }
+    & :global(code) { background: color-mix(in oklch, var(--sticky-ink) 10%, transparent); }
+  }
+
   .pages {
     display: flex;
     justify-content: space-between;
     gap: 1rem;
-    padding: 2rem 0;
-    border-top: 1px solid var(--rule);
+    padding-block: 2rem;
+    border-block-start: 1px solid var(--rule);
     font-size: 1.125rem;
 
-    & span { color: var(--ink-3); }
+    & p { color: var(--ink-3); }
 
     & div {
       display: flex;
@@ -134,10 +121,10 @@ const rendered = await Promise.all(
       </p>
       <h2><a href={`/posts/${item.entry.id}`} set:html={titleHtml(item.entry.data.title)} /></h2>
       <p class="excerpt">{excerpt(item.entry)}</p>
-      <span class="more">Continue reading, {readingMinutes(item.entry)} min</span>
+      <p class="more">Continue reading, {readingMinutes(item.entry)} min</p>
     </article>
   ) : (
-    <article class="note-card" aria-label="A note">
+    <article class="note-card" aria-label="Note">
       <p class="meta">
         <time datetime={isoDate(item.entry.data.publishDate)}>{shortDate(item.entry.data.publishDate)}</time>
         · A note
@@ -149,7 +136,7 @@ const rendered = await Promise.all(
 
 {total > 1 && (
   <nav class="pages" aria-label="Pagination">
-    <span>Page {page} of {total}</span>
+    <p>Page {page} of {total}</p>
     <div>
       {page > 1 && <a class="u" href={pageHref(page - 1)}>Newer posts</a>}
       {page < total && <a class="u" href={pageHref(page + 1)}>Older posts</a>}

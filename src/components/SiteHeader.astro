@@ -1,31 +1,19 @@
 ---
 import LogoIcon from './LogoIcon.astro';
 
-/**
- * SiteHeader — brand mark, primary nav, and the Auto / Light / Dark
- * theme pill.
- *
- * Props:
- *   currentPage — ID of the active nav item, used to set aria-current="page"
- */
-
 interface Props {
-  currentPage?: 'writing' | 'projects' | 'contact';
+  current?: 'writing' | 'projects' | 'contact';
 }
 
-const { currentPage } = Astro.props;
+const { current } = Astro.props;
 
-const navLinks = [
+const links = [
   { href: '/',         label: 'Writing',  id: 'writing'  },
   { href: '/projects', label: 'Projects', id: 'projects' },
   { href: '/contact',  label: 'Say hi',   id: 'contact'  },
 ] as const;
 
-const themes = [
-  { id: 'auto',  label: 'Auto'  },
-  { id: 'light', label: 'Light' },
-  { id: 'dark',  label: 'Dark'  },
-] as const;
+const themes = ['auto', 'light', 'dark'] as const;
 ---
 
 <style>
@@ -35,7 +23,7 @@ const themes = [
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 1rem;
-    padding-top: 2.25rem;
+    padding-block-start: 2.25rem;
   }
 
   .brand {
@@ -46,26 +34,26 @@ const themes = [
 
     & :global(svg) {
       color: var(--ink-2);
-      transition: transform .6s cubic-bezier(.3, 1.4, .5, 1), color .6s;
 
-      @media (prefers-reduced-motion: reduce) { transition: none; }
+      @media (prefers-reduced-motion: no-preference) {
+        transition: rotate .6s cubic-bezier(.3, 1.4, .5, 1), color .6s;
+      }
     }
 
     &:hover :global(svg) {
-      transform: rotate(-14deg);
       color: var(--accent);
 
-      @media (prefers-reduced-motion: reduce) { transform: none; }
+      @media (prefers-reduced-motion: no-preference) { rotate: -14deg; }
     }
 
     & span {
-      font-family: var(--f-display);
+      font-family: var(--font-display);
       font-variation-settings: var(--dv);
       font-size: 1.25rem;
     }
   }
 
-  /* Wraps under the brand on narrow screens rather than hiding the nav */
+  /* Wraps under the brand on narrow screens instead of hiding the nav, which the design left without a mobile fallback. */
   .end {
     display: flex;
     align-items: center;
@@ -79,7 +67,7 @@ const themes = [
     display: flex;
     gap: 1.25rem;
 
-    & a[aria-current="page"] { color: var(--ink); }
+    & [aria-current="page"] { color: var(--ink); }
   }
 
   .theme {
@@ -89,20 +77,17 @@ const themes = [
     padding: 0.1875rem;
 
     & button {
-      all: unset;
       cursor: pointer;
-      font-family: var(--f-body);
       font-size: 0.875rem;
       color: var(--ink-3);
       padding: 0.25rem 0.625rem;
       border-radius: 999rem;
+      text-transform: capitalize;
 
       &[aria-pressed="true"] {
         background: var(--ink);
         color: var(--paper);
       }
-
-      &:focus-visible { outline: 2px solid var(--accent); }
     }
   }
 </style>
@@ -115,64 +100,61 @@ const themes = [
 
   <div class="end">
     <nav aria-label="Primary">
-      {navLinks.map(({ href, label, id }) => (
-        <a href={href} aria-current={currentPage === id ? 'page' : undefined}>{label}</a>
+      {links.map(({ href, label, id }) => (
+        <a href={href} aria-current={current === id ? 'page' : undefined}>{label}</a>
       ))}
     </nav>
 
-    <!--
-      Theme pill — reads and writes the same localStorage key used
-      by the inline script in BaseLayout <head>.
-    -->
     <div class="theme" role="group" aria-label="Color theme">
-      {themes.map(({ id, label }) => (
-        <button type="button" data-theme={id} aria-pressed="false">{label}</button>
+      {themes.map((mode) => (
+        <button type="button" data-mode={mode} aria-pressed="false">{mode}</button>
       ))}
     </div>
   </div>
 </header>
 
 <script>
-  type Mode = 'auto' | 'dark' | 'light';
+  type Mode = 'auto' | 'light' | 'dark';
 
+  // Same storage key and auto rule as the inline script in BaseLayout.
   const KEY = 'mcespo.tweaks';
+  const prefersDark = matchMedia('(prefers-color-scheme: dark)');
+  const prefersLight = matchMedia('(prefers-color-scheme: light)');
   const buttons = document.querySelectorAll<HTMLButtonElement>('.theme button');
 
-  function getPrefs(): Record<string, unknown> {
-    try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch { return {}; }
+  const readPrefs = (): Record<string, unknown> => {
+    try { return JSON.parse(localStorage.getItem(KEY) ?? '{}'); } catch { return {}; }
+  };
+
+  const storedMode = (): Mode => {
+    const { darkMode } = readPrefs();
+    return darkMode === 'dark' || darkMode === 'light' ? darkMode : 'auto';
+  };
+
+  // No system preference at all falls back to night hours (7 pm – 7 am).
+  const autoIsDark = () => {
+    if (prefersDark.matches) return true;
+    if (prefersLight.matches) return false;
+    const hour = new Date().getHours();
+    return hour >= 19 || hour < 7;
+  };
+
+  const apply = (mode: Mode) => {
+    document.documentElement.classList.toggle('dark', mode === 'auto' ? autoIsDark() : mode === 'dark');
+    for (const button of buttons) {
+      button.setAttribute('aria-pressed', String(button.dataset.mode === mode));
+    }
+  };
+
+  for (const button of buttons) {
+    button.addEventListener('click', () => {
+      const mode = button.dataset.mode as Mode;
+      const { darkMode: _, ...prefs } = readPrefs();
+      localStorage.setItem(KEY, JSON.stringify(mode === 'auto' ? prefs : { ...prefs, darkMode: mode }));
+      apply(mode);
+    });
   }
 
-  function getMode(): Mode {
-    const m = getPrefs().darkMode;
-    return m === 'dark' || m === 'light' ? m : 'auto';
-  }
-
-  /* Auto: system preference first, then time of day (7 pm – 7 am = dark) */
-  function autoIsDark(): boolean {
-    if (window.matchMedia('(prefers-color-scheme: dark)').matches) return true;
-    if (window.matchMedia('(prefers-color-scheme: light)').matches) return false;
-    const h = new Date().getHours();
-    return h >= 19 || h < 7;
-  }
-
-  function apply(mode: Mode) {
-    const dark = mode === 'auto' ? autoIsDark() : mode === 'dark';
-    document.documentElement.classList.toggle('dark', dark);
-    buttons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.theme === mode)));
-  }
-
-  buttons.forEach((b) => b.addEventListener('click', () => {
-    const mode = b.dataset.theme as Mode;
-    const prefs = getPrefs();
-    if (mode === 'auto') { delete prefs.darkMode; } else { prefs.darkMode = mode; }
-    localStorage.setItem(KEY, JSON.stringify(prefs));
-    apply(mode);
-  }));
-
-  apply(getMode());
-
-  // Re-apply when the system preference changes, but only in auto mode
-  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-    if (getMode() === 'auto') apply('auto');
-  });
+  prefersDark.addEventListener('change', () => storedMode() === 'auto' && apply('auto'));
+  apply(storedMode());
 </script>

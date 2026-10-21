@@ -1,18 +1,12 @@
 ---
-/**
- * Tag page — every post filed under a tag or category.
- * Pinned tags from site.config get a page even before they're used.
- */
-
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import SiteHeader from '../../components/SiteHeader.astro';
-import SiteFooter from '../../components/SiteFooter.astro';
 import Stream from '../../components/Stream.astro';
 import { getPosts, postTags, tagSlug } from '../../lib/writing';
 import { site } from '../../site.config';
 
 export async function getStaticPaths() {
   const posts = await getPosts();
+  // Pinned tags get a page before any post uses them, so the homepage intro never links to a 404.
   const tags = new Set([...site.pinnedTags.map(tagSlug), ...posts.flatMap(postTags)]);
 
   return [...tags].map((tag) => ({
@@ -27,29 +21,22 @@ export async function getStaticPaths() {
 }
 
 const { tag, items } = Astro.props;
-const label = tag.replace(/-/g, ' ');
+const label = tag.replaceAll('-', ' ');
 ---
 
 <BaseLayout
   title={`Filed under ${label} — Marvin Céspedes`}
   description={`Posts about ${label}.`}
+  nav="writing"
 >
-  <div class="col">
-    <SiteHeader currentPage="writing" />
+  <header class="intro">
+    <h1>Filed under <em>{label}</em>.</h1>
+    <p>
+      {items.length > 0
+        ? `${items.length} ${items.length === 1 ? 'post' : 'posts'}, newest first.`
+        : 'Nothing here yet. It’s on the list.'}
+    </p>
+  </header>
 
-    <main>
-      <header class="intro">
-        <h1>Filed under <em>{label}</em>.</h1>
-        <p>
-          {items.length > 0
-            ? `${items.length} ${items.length === 1 ? 'post' : 'posts'}, newest first.`
-            : 'Nothing here yet. It’s on the list.'}
-        </p>
-      </header>
-
-      <Stream items={items} />
-    </main>
-
-    <SiteFooter />
-  </div>
+  <Stream items={items} />
 </BaseLayout>

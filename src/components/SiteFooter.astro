@@ -1,17 +1,13 @@
 ---
-/**
- * SiteFooter — the seal plus a short sign-off with RSS and email links.
- */
-
 import LogoIcon from './LogoIcon.astro';
 import { site } from '../site.config';
 ---
 
 <style>
   footer {
-    margin-top: 4.5rem;
-    padding: 3rem 0 5rem;
-    border-top: 1px solid var(--rule);
+    margin-block-start: 4.5rem;
+    padding-block: 3rem 5rem;
+    border-block-start: 1px solid var(--rule);
     display: flex;
     gap: 1.25rem;
     align-items: flex-start;
@@ -32,7 +28,7 @@ import { site } from '../site.config';
   <LogoIcon size="2.25rem" />
   <p>
     Thanks for stopping by. This site is hand-built, has no tracking, and is
-    best read slowly. Follow by <a href="/feed.xml">RSS</a> or
-    <a href={`mailto:${site.email}`}>email</a>.
+    best read slowly. Follow by <a class="u" href="/feed.xml">RSS</a> or
+    <a class="u" href={`mailto:${site.email}`}>email</a>.
   </p>
 </footer>

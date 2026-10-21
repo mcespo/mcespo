@@ -1,6 +1,8 @@
 # mcespo.com — Claude instructions
 
-Personal portfolio site for Marvin Céspedes. Built with **Astro v5**, **Tailwind v4** (via `@tailwindcss/vite`), and **TypeScript strict**.
+Personal portfolio site for Marvin Céspedes. Built with **Astro v7**, **Tailwind v4** (via `@tailwindcss/vite`), and **TypeScript strict** (TS 6 — `@astrojs/check` doesn't support TS 7 yet). Requires Node ≥ 22.22.
+
+Type-check with `npm run check` (`astro check`).
 
 ---
 
@@ -71,7 +73,7 @@ When adding a new color:
 
 ### General
 - **Components for anything used twice.** If a pattern appears on more than one page, extract it.
-- **Layouts for page shells.** `BaseLayout.astro` is the only HTML document shell — never write a second `<!doctype html>`.
+- **Layouts for page shells.** `BaseLayout.astro` is the only HTML document shell — never write a second `<!doctype html>`. It also renders the skip link, header, `<main>` and footer, so pages pass `nav="writing" | "projects" | "contact"` and supply only their content.
 - **Props are always typed** with a `interface Props {}` block at the top of the frontmatter.
 - **No `client:*` directives** unless a component genuinely needs browser APIs or reactive state. When JS is needed, prefer Alpine (see Standards → JavaScript below).
 - **`set:html` only for trusted content** — never for user-supplied strings.
@@ -91,10 +93,10 @@ import myPhoto from '../assets/photo.jpg';
 For images embedded in blog posts, use the `Plate` component (adds a frame + caption) or plain Markdown image syntax for inline images. Remote images (hotlinked) use a regular `<img>` — add the domain to `image.domains` in `astro.config.mjs` if Astro complains.
 
 ### Content collections
-- Config: `src/content.config.ts` (Astro v5 location)
+- Config: `src/content.config.ts`; import `z` from `astro/zod` (the `astro:content` export is deprecated)
 - All blog posts live in `src/content/posts/` — `.md` for plain prose, `.mdx` when a post needs inline components
 - Short untitled notes live in `src/content/notes/` — they appear as sticky cards in the writing stream, with no detail page
-- Use `render(post)` not `post.render()` — Astro v5 API
+- Use `render(post)` not `post.render()`
 - Use `entry.id` not `entry.slug` for URL generation with the glob loader
 
 ### Syntax highlighting
@@ -106,7 +108,9 @@ const greeting = 'hello';
 ```
 ````
 
-No extra packages needed. Theme can be configured in `astro.config.mjs` under `markdown.shikiConfig` if needed.
+No extra packages needed. Markdown is processed by Sätteri (Astro 7's default) — remark/rehype plugins would need `@astrojs/markdown-remark` and `markdown.processor: unified()`. Shiki uses the `css-variables` theme; token colors map to site tokens via `--astro-code-*` in `global.css`.
+
+`compressHTML: true` is set deliberately: Astro 7's default JSX whitespace rules would drop spaces in prose that wraps across lines in templates.
 
 ---
 
@@ -263,11 +267,25 @@ Every page is one `.col` column (`42.5rem` max) holding `SiteHeader`, `<main>` a
 `src/site.config.ts` holds the email, the homepage "Now" line (company, book), stream page size, and the pinned tags linked from the homepage intro.
 
 ### Animations
-All animations and transitions must respect `prefers-reduced-motion`. See the pattern in `global.css`.
+All animations and transitions must respect `prefers-reduced-motion`. See the pattern in `global.css`. Animate on a dedicated layer (like the `body::before` background) rather than on elements that contain content, so frames don't repaint the page.
 
-### Content collections (Astro v5)
+### Fonts
+Fraunces, Newsreader and JetBrains Mono are self-hosted with Astro's Fonts API (`fonts` in `astro.config.mjs`), exposed as `--font-display`, `--font-body` and `--font-mono`. Don't add a Google Fonts `<link>`. Fraunces must keep its `opsz` axis, since headings use `"opsz" 144` via `--dv`.
+
+### Accessibility
+- Text colors must meet WCAG AA (4.5:1) against the background. `--ink-3` is darker than the original design for this reason.
+- Links inside running text need an underline (`.u`), not just a color change.
+- `Plate` requires `alt` whenever it has `src`; `YouTubeEmbed` requires `title`; posts with `heroImage` require `heroImageAlt`.
+
+### Favicons and app icons
+Everything in `public/` except hand-added assets is generated from the seal in `LogoSprite.astro` by `npm run favicons` (`scripts/favicons.mjs`): `favicon.svg` (switches color in dark mode), `favicon.ico` (16/32/48), `apple-touch-icon.png` (180), `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, and `site.webmanifest`. Rerun it after changing the logo or the accent/paper colors; never edit the outputs by hand. Colors are defined in OKLCH in the script and converted to sRGB only for the PNGs and manifest, which can't use OKLCH.
+
+### Comments
+Keep comments light: one or two sentences that explain *why*, never a restatement of what the code does.
+
+### Content collections
 - Config lives at `src/content.config.ts` (NOT `src/content/config.ts`)
-- Use `render(post)` not `post.render()` (v5 API)
+- Use `render(post)` not `post.render()`
 - Use `entry.id` not `entry.slug` for URL generation (glob loader)
 
 ---
@@ -313,14 +331,16 @@ Everything required is committed: `.husky/commit-msg`, `commitlint.config.js`, a
 | File | Owns |
 |------|------|
 | `src/styles/global.css` | All design tokens + site-wide patterns (reading grid, prose, animations) |
-| `src/layouts/BaseLayout.astro` | HTML shell, SEO meta, JSON-LD slot, dark-mode init, fade-up IO |
+| `src/layouts/BaseLayout.astro` | HTML shell, SEO meta, fonts, JSON-LD, dark-mode init, page chrome |
 | `src/site.config.ts` | Email, "Now" line, page size, pinned tags |
 | `src/lib/writing.ts` | Stream/post queries, excerpt, reading time, date + tag helpers |
 | `src/components/SiteHeader.astro` | Brand mark, primary nav, Auto/Light/Dark theme pill |
 | `src/components/SiteFooter.astro` | Seal + sign-off with RSS/email links |
 | `src/components/Stream.astro` | Post entries, note cards, pagination row |
 | `src/components/ChicagoStars.astro` | Four-star ornament under post headers |
-| `src/components/LogoIcon.astro` | The seal, in `currentColor` |
+| `src/components/LogoSprite.astro` | The seal's paths as an SVG `<symbol>`, rendered once per page |
+| `src/components/LogoIcon.astro` | `<use>` reference to the seal, in `currentColor` |
+| `scripts/favicons.mjs` | Generates favicons, app icons and the web manifest into `public/` |
 | `src/components/Plate.astro` | Image or striped placeholder with italic caption |
 | `src/components/Note.astro` | Sticky-note callout aside |
 | `src/components/YouTubeEmbed.astro` | Privacy-safe YouTube iframe with caption |

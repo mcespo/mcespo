@@ -1,22 +1,17 @@
-/**
- * Site-wide settings that change more often than the templates do.
- */
+/** Settings that change more often than the templates. */
 export const site = {
   name: 'Marvin Céspedes',
   email: 'hi@mcespo.com',
 
-  /** "Lately I'm designing at … and reading …" on the homepage */
+  /** The homepage's "Lately I'm designing at … and reading …" line. */
   now: {
     company: '[Company]',
     book: '[Book Title]',
   },
 
-  /** Entries (posts + notes) per page in the writing stream */
+  /** Posts and notes per stream page. */
   pageSize: 5,
 
-  /**
-   * Tags linked from the homepage intro. Their pages are always
-   * generated, even before a post uses them.
-   */
+  /** Linked from the homepage intro, so their pages build even before a post uses them. */
   pinnedTags: ['css', 'process', 'learning'],
 };

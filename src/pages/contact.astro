@@ -1,36 +1,23 @@
 ---
-/**
- * Contact — a simple say-hi page.
- */
-
 import BaseLayout from '../layouts/BaseLayout.astro';
-import SiteHeader from '../components/SiteHeader.astro';
-import SiteFooter from '../components/SiteFooter.astro';
 import { site } from '../site.config';
 ---
 
 <BaseLayout
   title="Say hi — Marvin Céspedes"
   description="Get in touch with Marvin Céspedes."
+  nav="contact"
 >
-  <div class="col">
-    <SiteHeader currentPage="contact" />
-
-    <main>
-      <section class="intro" aria-label="Contact">
-        <h1>Say hi.</h1>
-        <p>
-          The best way to reach me is email:
-          <a class="u" href={`mailto:${site.email}`}>{site.email}</a>. I answer every one.
-        </p>
-        <p>
-          I’m open to conversations about product design, brand work, and
-          small collaborations. I’m not looking for full-time roles right
-          now, but I’m always happy to talk.
-        </p>
-      </section>
-    </main>
-
-    <SiteFooter />
-  </div>
+  <header class="intro">
+    <h1>Say hi.</h1>
+    <p>
+      The best way to reach me is email:
+      <a class="u" href={`mailto:${site.email}`}>{site.email}</a>. I answer every one.
+    </p>
+    <p>
+      I’m open to conversations about product design, brand work, and
+      small collaborations. I’m not looking for full-time roles right
+      now, but I’m always happy to talk.
+    </p>
+  </header>
 </BaseLayout>

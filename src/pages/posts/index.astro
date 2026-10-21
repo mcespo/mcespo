@@ -1,27 +1,18 @@
 ---
-/**
- * Posts index — the full archive: every post and note, newest first.
- */
-
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import SiteHeader from '../../components/SiteHeader.astro';
-import SiteFooter from '../../components/SiteFooter.astro';
 import Stream from '../../components/Stream.astro';
 import { getStream } from '../../lib/writing';
+import { site } from '../../site.config';
 
 const stream = await getStream();
 
 const schema = {
   '@context': 'https://schema.org',
   '@type': 'Blog',
-  name: 'Marvin Céspedes — Writing',
+  name: `${site.name} — Writing`,
   url: 'https://mcespo.com/posts',
   description: 'Essays, notes, and things I needed to write down.',
-  author: {
-    '@type': 'Person',
-    name: 'Marvin Céspedes',
-    url: 'https://mcespo.com',
-  },
+  author: { '@type': 'Person', name: site.name, url: 'https://mcespo.com' },
 };
 ---
 
@@ -29,19 +20,12 @@ const schema = {
   title="Writing — Marvin Céspedes"
   description="Essays, notes, and things I needed to write down."
   schema={schema}
+  nav="writing"
 >
-  <div class="col">
-    <SiteHeader currentPage="writing" />
+  <header class="intro">
+    <h1>Everything, so far.</h1>
+    <p>Essays, notes, and things I needed to write down — newest first.</p>
+  </header>
 
-    <main>
-      <header class="intro">
-        <h1>Everything, so far.</h1>
-        <p>Essays, notes, and things I needed to write down — newest first.</p>
-      </header>
-
-      <Stream items={stream} />
-    </main>
-
-    <SiteFooter />
-  </div>
+  <Stream items={stream} />
 </BaseLayout>

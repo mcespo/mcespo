@@ -1,14 +1,5 @@
 ---
-/**
- * Home — personal intro, then page 1 of the writing stream
- * (posts and notes, newest first). Later pages live at /page/[n].
- *
- * Schema.org: WebSite + Person @graph.
- */
-
 import BaseLayout from '../layouts/BaseLayout.astro';
-import SiteHeader from '../components/SiteHeader.astro';
-import SiteFooter from '../components/SiteFooter.astro';
 import Stream from '../components/Stream.astro';
 import { getStream, tagHref } from '../lib/writing';
 import { site } from '../site.config';
@@ -21,7 +12,7 @@ const schema = {
   '@graph': [
     {
       '@type': 'WebSite',
-      name: 'Marvin Céspedes',
+      name: site.name,
       url: 'https://mcespo.com',
       description: 'Frontend-leaning fullstack developer, UX designer, photographer, occasional writer.',
       author: { '@id': '#marvin' },
@@ -29,7 +20,7 @@ const schema = {
     {
       '@type': 'Person',
       '@id': '#marvin',
-      name: 'Marvin Céspedes',
+      name: site.name,
       url: 'https://mcespo.com',
       email: site.email,
       sameAs: ['https://github.com/mcespo'],
@@ -42,26 +33,19 @@ const schema = {
   title="Marvin Céspedes — Designer, Developer & overall web-person"
   description="Frontend-leaning fullstack developer, UX designer, photographer, occasional writer."
   schema={schema}
+  nav="writing"
 >
-  <div class="col">
-    <SiteHeader currentPage="writing" />
+  <section class="intro" aria-labelledby="hello">
+    <h1 id="hello">Hi, I’m Marvin.</h1>
+    <p>
+      I make websites in Chicago and write here about
+      <a class="u" href={tagHref('css')}>CSS</a>,
+      <a class="u" href={tagHref('process')}>how design actually gets made</a>,
+      and whatever I’m <a class="u" href={tagHref('learning')}>learning slowly</a>.
+      Some of it is finished.
+    </p>
+    <p>Lately I’m designing at {site.now.company} and reading <cite>{site.now.book}</cite>.</p>
+  </section>
 
-    <main>
-      <section class="intro" aria-label="Introduction">
-        <h1>Hi, I’m Marvin.</h1>
-        <p>
-          I make websites in Chicago and write here about
-          <a class="u" href={tagHref('css')}>CSS</a>,
-          <a class="u" href={tagHref('process')}>how design actually gets made</a>,
-          and whatever I’m <a class="u" href={tagHref('learning')}>learning slowly</a>.
-          Some of it is finished.
-        </p>
-        <p>Lately I’m designing at {site.now.company} and reading <em>{site.now.book}</em>.</p>
-      </section>
-
-      <Stream items={stream.slice(0, site.pageSize)} page={1} total={total} />
-    </main>
-
-    <SiteFooter />
-  </div>
+  <Stream items={stream.slice(0, site.pageSize)} page={1} total={total} />
 </BaseLayout>

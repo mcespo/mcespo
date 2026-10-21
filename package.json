@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.0.1",
   "engines": {
-    "node": ">=22.12.0"
+    "node": ">=22.22.0"
   },
   "scripts": {
     "dev": "astro dev",
@@ -11,17 +11,22 @@
     "preview": "astro preview",
     "astro": "astro",
     "prepare": "husky",
-    "check-updates": "npm outdated"
+    "check-updates": "npm outdated",
+    "check": "astro check",
+    "favicons": "node scripts/favicons.mjs"
   },
   "dependencies": {
-    "@astrojs/mdx": "^5.0.3",
-    "@tailwindcss/vite": "^4.2.4",
-    "astro": "^6.1.8",
-    "tailwindcss": "^4.2.4"
+    "@astrojs/mdx": "^8.1.0",
+    "@tailwindcss/vite": "^4.3.3",
+    "astro": "^7.4.1",
+    "tailwindcss": "^4.3.3"
   },
   "devDependencies": {
-    "@commitlint/cli": "^20.5.0",
-    "@commitlint/config-conventional": "^20.5.0",
-    "husky": "^9.1.7"
+    "@astrojs/check": "^0.9.11",
+    "@commitlint/cli": "^21.2.4",
+    "@commitlint/config-conventional": "^21.2.4",
+    "husky": "^9.1.7",
+    "sharp": "^0.35.5",
+    "typescript": "^6.0.3"
   }
 }

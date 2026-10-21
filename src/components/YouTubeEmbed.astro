@@ -1,48 +1,29 @@
 ---
-/**
- * YouTubeEmbed — responsive iframe using youtube-nocookie.com.
- *
- * No cookies are set until the user presses play. The iframe is
- * lazy-loaded so it doesn't block page paint.
- *
- * Usage in .mdx:
- *   import YouTubeEmbed from '../../components/YouTubeEmbed.astro'
- *   <YouTubeEmbed id="dQw4w9WgXcQ" title="Never Gonna Give You Up" />
- *   <YouTubeEmbed id="dQw4w9WgXcQ" start={42} />
- */
-
 interface Props {
-  /** YouTube video ID — the part after ?v= in a standard YouTube URL */
+  /** The part after ?v= in a YouTube URL. */
   id: string;
-  /** Accessible title for the iframe — defaults to "YouTube video" */
-  title?: string;
-  /** Start time in seconds */
+  /** Accessible name for the iframe. */
+  title: string;
+  /** Start time in seconds. */
   start?: number;
-  /** Caption shown below the embed */
   caption?: string;
 }
 
-const { id, title = 'YouTube video', start, caption } = Astro.props;
+const { id, title, start, caption } = Astro.props;
 
 const params = new URLSearchParams({ rel: '0' });
 if (start) params.set('start', String(start));
-const src = `https://www.youtube-nocookie.com/embed/${id}?${params}`;
 ---
 
 <figure>
-  <div class="relative w-full" style="aspect-ratio: 16/9">
-    <iframe
-      {src}
-      {title}
-      class="absolute inset-0 w-full h-full rounded-[0.375rem]"
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-      allowfullscreen
-      loading="lazy"
-    ></iframe>
-  </div>
-  {caption && (
-    <figcaption>
-      {caption}
-    </figcaption>
-  )}
+  <!-- youtube-nocookie sets no cookies until play. -->
+  <iframe
+    src={`https://www.youtube-nocookie.com/embed/${id}?${params}`}
+    {title}
+    class="block w-full aspect-video rounded-[0.375rem]"
+    allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+    allowfullscreen
+    loading="lazy"
+  ></iframe>
+  {caption && <figcaption>{caption}</figcaption>}
 </figure>

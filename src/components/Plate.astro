@@ -1,42 +1,23 @@
 ---
 /**
- * Plate — a figure with an italic caption. Inside a post it breaks
- * out of the reading column on wide screens.
- *
- * When no `src` is provided the frame renders a striped placeholder.
- * The `ratio` prop sets the CSS aspect-ratio of the frame.
- *
- * Usage:
- *   <Plate caption="<em>Project Name</em> — final comp, 2025." label="photo — notebook spread" />
- *   <Plate num="Fig. 01" src="/img/photo.jpg" alt="Studio corner" caption="35mm, overcast." />
+ * Captioned figure that breaks out of the post column on wide screens.
+ * Without `src` it renders a striped placeholder showing `label`.
  */
 
-interface Props {
-  /** Optional figure label, e.g. "Fig. 02" — prefixes the caption */
-  num?: string;
-  /** Caption HTML string — em and other inline elements are allowed */
+type Props = {
+  /** Trusted HTML, so captions can use <em>. */
   caption: string;
-  /** Placeholder text shown inside an empty frame */
-  label?: string;
-  /** Optional image URL; omit to render a placeholder frame */
-  src?: string;
-  /** Alt text for the image */
-  alt?: string;
-  /** CSS aspect-ratio applied to the frame — defaults to "16/9" */
+  /** Prefixes the caption, e.g. "Fig. 02". */
+  num?: string;
   ratio?: string;
-  /** Extra classes on the outer figure element */
   class?: string;
-}
+} & (
+  // An image must say what it shows; the type check catches a missing alt.
+  | { src: string; alt: string; label?: never }
+  | { src?: never; alt?: never; label?: string }
+);
 
-const {
-  num,
-  caption,
-  label = '',
-  src,
-  alt = '',
-  ratio = '16/9',
-  class: className = '',
-} = Astro.props;
+const { caption, num, ratio = '16/9', class: className, src, alt, label } = Astro.props;
 ---
 
 <style>
@@ -47,8 +28,8 @@ const {
     place-items: center;
 
     & img {
-      width: 100%;
-      height: 100%;
+      inline-size: 100%;
+      block-size: 100%;
       object-fit: cover;
     }
   }
@@ -59,7 +40,7 @@ const {
       var(--paper-2) 0 0.625rem,
       color-mix(in oklch, var(--paper-2) 80%, var(--ink) 6%) 0.625rem 1.25rem
     );
-    font-family: var(--f-mono);
+    font-family: var(--font-mono);
     font-size: 0.8125rem;
     color: var(--ink-3);
   }

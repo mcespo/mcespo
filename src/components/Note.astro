@@ -1,13 +1,5 @@
 ---
-/**
- * Note — a sticky-note callout, styled like the notes in the
- * writing stream. Used inline within a post's body.
- *
- * Usage:
- *   <Note label="A note in the margin">
- *     psst — if you read to the end there's a small thing waiting. ↓
- *   </Note>
- */
+/** Sticky-note callout for use inside a post body. */
 
 interface Props {
   label?: string;
@@ -17,6 +9,6 @@ const { label = 'A note in the margin' } = Astro.props;
 ---
 
 <aside class="note" role="note">
-  <div class="label">{label}</div>
+  <p class="label">{label}</p>
   <p><slot /></p>
 </aside>

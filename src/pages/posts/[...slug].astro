@@ -1,21 +1,6 @@
 ---
-/**
- * Post — dynamic route for /posts/[slug].
- *
- * Sections:
- *   1. Centered header: category · date · reading time, title, dek
- *   2. Chicago-star ornament
- *   3. Article body (drop cap, pull quotes, figures, code)
- *   4. Sign-off, then footnotes (from Markdown)
- *   5. Next-post sentence
- *
- * Schema.org: BlogPosting with author Person.
- */
-
 import { render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import SiteHeader from '../../components/SiteHeader.astro';
-import SiteFooter from '../../components/SiteFooter.astro';
 import ChicagoStars from '../../components/ChicagoStars.astro';
 import {
   type Post,
@@ -32,9 +17,8 @@ import { site } from '../../site.config';
 export async function getStaticPaths() {
   const posts = await getPosts();
   return posts.map((post, i) => ({
-    /* Glob loader uses entry.id as the slug */
     params: { slug: post.id },
-    /* "Next" reads down the list — the next older post */
+    // "Next" follows the stream's reading order, so it's the next older post.
     props: { post, next: posts[i + 1] ?? null },
   }));
 }
@@ -48,10 +32,9 @@ const { post, next } = Astro.props;
 const { Content } = await render(post);
 
 const title = titleText(post.data.title);
-const url = new URL(`/posts/${post.id}`, Astro.site).href;
 const writeBack = `mailto:${site.email}?subject=${encodeURIComponent(`Re: ${title}`)}`;
+const author = { '@type': 'Person', name: site.name, url: 'https://mcespo.com' };
 
-/* ── Schema.org: BlogPosting ─────────────────────────────────*/
 const schema = {
   '@context': 'https://schema.org',
   '@type': 'BlogPosting',
@@ -59,23 +42,15 @@ const schema = {
   description: post.data.description,
   datePublished: post.data.publishDate.toISOString(),
   keywords: post.data.tags.join(', '),
-  url,
-  author: {
-    '@type': 'Person',
-    name: 'Marvin Céspedes',
-    url: 'https://mcespo.com',
-  },
-  publisher: {
-    '@type': 'Person',
-    name: 'Marvin Céspedes',
-    url: 'https://mcespo.com',
-  },
+  url: new URL(`/posts/${post.id}`, Astro.site).href,
+  author,
+  publisher: author,
 };
 ---
 
 <style>
-  .post-hd {
-    padding: 6rem 0 2.5rem;
+  header {
+    padding-block: 6rem 2.5rem;
     text-align: center;
     display: flex;
     flex-direction: column;
@@ -89,7 +64,7 @@ const schema = {
       line-height: 1;
       letter-spacing: -0.02em;
       font-weight: 360;
-      max-width: 40rem;
+      max-inline-size: 40rem;
 
       @media (width <= 37.5rem) { font-size: 2.875rem; }
     }
@@ -99,11 +74,11 @@ const schema = {
     font-size: 1.4375rem;
     line-height: 1.45;
     color: var(--ink-2);
-    max-width: 33.75rem;
+    max-inline-size: 33.75rem;
   }
 
   .next {
-    margin-top: 3.5rem;
+    margin-block-start: 3.5rem;
     font-size: 1.1875rem;
     line-height: 1.6;
   }
@@ -112,40 +87,36 @@ const schema = {
 <BaseLayout
   title={`${title} — Marvin Céspedes`}
   description={post.data.description}
-  ogImage={post.data.heroImage ? new URL(post.data.heroImage, Astro.site).href : undefined}
+  ogImage={post.data.heroImage && new URL(post.data.heroImage, Astro.site).href}
+  ogImageAlt={post.data.heroImageAlt}
   ogType="article"
   schema={schema}
+  nav="writing"
 >
-  <div class="col">
-    <SiteHeader currentPage="writing" />
-
-    <main>
-      <header class="post-hd">
-        <p class="meta">
-          <a href={tagHref(post.data.category)}>{post.data.category}</a>
-          · <time datetime={isoDate(post.data.publishDate)}>{longDate(post.data.publishDate)}</time>
-          · {readingMinutes(post)} min
-        </p>
-        <h1 set:html={titleHtml(post.data.title)} />
-        <p class="dek">{post.data.description}</p>
-      </header>
-
-      <ChicagoStars />
-
-      <article class="art">
-        <Content />
-        <p class="sign">— Marvin</p>
-      </article>
-
-      <p class="next">
-        {next ? (
-          <>If you liked this, the next one is <a class="u" href={`/posts/${next.id}`}>{titleText(next.data.title)}</a>. Or </>
-        ) : (
-          <>If you liked this, </>
-        )}<a class="u" href={writeBack}>write back</a> — I read everything.
+  <article>
+    <header>
+      <p class="meta">
+        <a class="u" href={tagHref(post.data.category)}>{post.data.category}</a>
+        · <time datetime={isoDate(post.data.publishDate)}>{longDate(post.data.publishDate)}</time>
+        · {readingMinutes(post)} min read
       </p>
-    </main>
+      <h1 set:html={titleHtml(post.data.title)} />
+      <p class="dek">{post.data.description}</p>
+    </header>
 
-    <SiteFooter />
-  </div>
+    <ChicagoStars />
+
+    <div class="art">
+      <Content />
+      <p class="sign">— Marvin</p>
+    </div>
+  </article>
+
+  <p class="next">
+    {next ? (
+      <>If you liked this, the next one is <a class="u" href={`/posts/${next.id}`}>{titleText(next.data.title)}</a>. Or </>
+    ) : (
+      <>If you liked this, </>
+    )}<a class="u" href={writeBack}>write back</a> — I read everything.
+  </p>
 </BaseLayout>
