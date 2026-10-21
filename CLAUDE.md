@@ -1,6 +1,8 @@
 # mcespo.com — Claude instructions
 
-Personal portfolio site for Marvin Céspedes. Built with **Astro v7**, **Tailwind v4** (via `@tailwindcss/vite`), and **TypeScript strict** (TS 6 — `@astrojs/check` doesn't support TS 7 yet). Requires Node ≥ 22.22.
+Personal portfolio site for Marvin Céspedes.
+
+> **Current state: homepage only.** The blog, notes stream, tags, pagination, projects and contact pages are built and styled but *parked* until there's real content. Astro skips `_`-prefixed files and folders in `src/pages/`, so they live at `src/pages/_posts/`, `_tags/`, `_page/`, `_projects.astro` and `_contact.astro`. To bring a section back: `git mv` it to drop the underscore, add it to `site.nav` in `src/site.config.ts`, and restore any homepage/footer links it needs (the stream on the homepage, RSS once a feed exists). Parked pages still type-check, so keep them compiling. Built with **Astro v7**, **Tailwind v4** (via `@tailwindcss/vite`), and **TypeScript strict** (TS 6 — `@astrojs/check` doesn't support TS 7 yet). Requires Node ≥ 22.22.
 
 Type-check with `npm run check` (`astro check`).
 
@@ -264,10 +266,12 @@ The inline `is:inline` script in `BaseLayout.astro` reads localStorage and appli
 Every page is one `.col` column (`42.5rem` max) holding `SiteHeader`, `<main>` and `SiteFooter`. Post bodies render into `<article class="art">` (styles in `global.css`). Breakpoints: `56.25rem` (pull quotes and figures stop breaking out) and `37.5rem` (smaller type).
 
 ### Site config
-`src/site.config.ts` holds the email, the homepage "Now" line (company, book), stream page size, and the pinned tags linked from the homepage intro.
+`src/site.config.ts` holds the email, header nav (empty while only the homepage is live), social links, stream page size, and the pinned tags for the parked tag pages.
 
 ### Animations
 All animations and transitions must respect `prefers-reduced-motion`. See the pattern in `global.css`. Animate on a dedicated layer (like the `body::before` background) rather than on elements that contain content, so frames don't repaint the page.
+
+Entrance animations use the shared blur-in in `global.css`: add `reveal` to one element, or `reveal-group` to a parent to stagger its children, and set `--reveal-offset` on the element to sequence it after earlier content. Theme changes cross-fade through the View Transitions API (`SiteHeader`). Both are skipped under reduced motion; color-only hover transitions stay, since they aren't motion.
 
 ### Fonts
 Fraunces, Newsreader and JetBrains Mono are self-hosted with Astro's Fonts API (`fonts` in `astro.config.mjs`), exposed as `--font-display`, `--font-body` and `--font-mono`. Don't add a Google Fonts `<link>`. Fraunces must keep its `opsz` axis, since headings use `"opsz" 144` via `--dv`.
@@ -335,7 +339,7 @@ Everything required is committed: `.husky/commit-msg`, `commitlint.config.js`, a
 | `src/site.config.ts` | Email, "Now" line, page size, pinned tags |
 | `src/lib/writing.ts` | Stream/post queries, excerpt, reading time, date + tag helpers |
 | `src/components/SiteHeader.astro` | Brand mark, primary nav, Auto/Light/Dark theme pill |
-| `src/components/SiteFooter.astro` | Seal + sign-off with RSS/email links |
+| `src/components/SiteFooter.astro` | Seal, sign-off, social links, copyright |
 | `src/components/Stream.astro` | Post entries, note cards, pagination row |
 | `src/components/ChicagoStars.astro` | Four-star ornament under post headers |
 | `src/components/LogoSprite.astro` | The seal's paths as an SVG `<symbol>`, rendered once per page |
@@ -349,8 +353,9 @@ Everything required is committed: `.husky/commit-msg`, `commitlint.config.js`, a
 | `src/content/posts/*.md` | Plain Markdown blog posts |
 | `src/content/posts/*.mdx` | Blog posts that need inline components |
 | `src/content/notes/*.md` | Short untitled notes |
-| `src/pages/index.astro` | Home: intro + page 1 of the stream |
-| `src/pages/page/[page].astro` | Stream pages 2+ |
-| `src/pages/posts/index.astro` | Full archive |
-| `src/pages/posts/[...slug].astro` | Blog post template |
-| `src/pages/tags/[tag].astro` | Posts by tag or category |
+| `src/pages/index.astro` | Home: intro + bio (the only live page) |
+| `src/pages/_page/[page].astro` | *Parked* — stream pages 2+ |
+| `src/pages/_posts/index.astro` | *Parked* — full archive |
+| `src/pages/_posts/[...slug].astro` | *Parked* — blog post template |
+| `src/pages/_tags/[tag].astro` | *Parked* — posts by tag or category |
+| `src/pages/_projects.astro`, `_contact.astro` | *Parked* — stubs |

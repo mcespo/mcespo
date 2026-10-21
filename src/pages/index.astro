@@ -1,51 +1,86 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Stream from '../components/Stream.astro';
-import { getStream, tagHref } from '../lib/writing';
 import { site } from '../site.config';
 
-const stream = await getStream();
-const total = Math.max(1, Math.ceil(stream.length / site.pageSize));
+const description =
+  "Software Engineer, UX/UI Developer, and Designer. Marvin is broadly versed and pretty heckin' good at the code.";
+
+const askMe = `mailto:${site.email}?${new URLSearchParams({
+  subject: "Oh hello Marvin, you're so cool!",
+  body: 'I wish to be marginally as attractive as you are. Please help! Also, I wanted to ask...',
+}).toString().replaceAll('+', '%20')}`;
 
 const schema = {
   '@context': 'https://schema.org',
-  '@graph': [
-    {
-      '@type': 'WebSite',
-      name: site.name,
-      url: 'https://mcespo.com',
-      description: 'Frontend-leaning fullstack developer, UX designer, photographer, occasional writer.',
-      author: { '@id': '#marvin' },
-    },
-    {
-      '@type': 'Person',
-      '@id': '#marvin',
-      name: site.name,
-      url: 'https://mcespo.com',
-      email: site.email,
-      sameAs: ['https://github.com/mcespo'],
-    },
-  ],
+  '@type': 'Person',
+  name: site.name,
+  url: 'https://mcespo.com',
+  email: site.email,
+  jobTitle: 'Software Engineer',
+  worksFor: { '@type': 'Organization', name: 'Kin', url: 'https://www.kin.com/' },
+  address: { '@type': 'PostalAddress', addressLocality: 'Chicago', addressRegion: 'IL' },
+  sameAs: site.social.map(({ href }) => href),
 };
 ---
 
-<BaseLayout
-  title="Marvin Céspedes — Designer, Developer & overall web-person"
-  description="Frontend-leaning fullstack developer, UX designer, photographer, occasional writer."
-  schema={schema}
-  nav="writing"
->
-  <section class="intro" aria-labelledby="hello">
-    <h1 id="hello">Hi, I’m Marvin.</h1>
+<style>
+  /* The shared intro spacing is sized for a post list; the bio follows more closely. */
+  .intro {
+    padding-block-end: 1.625rem;
+    --reveal-offset: 120ms;
+  }
+
+  .bio {
+    --reveal-offset: 340ms;
+    font-size: 1.3125rem;
+    line-height: 1.7;
+
+    & p + p { margin-block-start: 1.625rem; }
+
+    @media (width <= 37.5rem) { font-size: 1.1875rem; }
+  }
+
+  .sign {
+    margin-block-start: 2.5rem;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 1.875rem;
+  }
+</style>
+
+<BaseLayout title="Marvin Céspedes, Web Peep" description={description} schema={schema}>
+  <section class="intro reveal-group" aria-labelledby="hello">
+    <h1 id="hello">Howdy, I’m Marvin.</h1>
     <p>
-      I make websites in Chicago and write here about
-      <a class="u" href={tagHref('css')}>CSS</a>,
-      <a class="u" href={tagHref('process')}>how design actually gets made</a>,
-      and whatever I’m <a class="u" href={tagHref('learning')}>learning slowly</a>.
-      Some of it is finished.
+      I’m a software engineer and designer in beautiful (and mostly chilly) Chicago.
+      I build for the web, with a soft spot for the frontend and accessibility.
     </p>
-    <p>Lately I’m designing at {site.now.company} and reading <cite>{site.now.book}</cite>.</p>
   </section>
 
-  <Stream items={stream.slice(0, site.pageSize)} page={1} total={total} />
+  <div class="bio reveal-group">
+    <p>
+      These days I’m at <a class="u" href="https://www.kin.com/">Kin</a>, where I look after
+      the main marketing site. It runs on <a class="u" href="https://www.content.one/">Content.One</a>.
+    </p>
+    <p>
+      Before that, I built software for <a class="u" href="https://www.3zbrands.com/">3Z Brands</a>,
+      <a class="u" href="https://www.benchmarkanalytics.com/">Benchmark Analytics</a>, and
+      <a class="u" href="https://www.grainger.com/">Grainger</a>. I also worked on the internal design
+      system at Epsilon (formerly Conversant Media), Vox Media’s
+      <a class="u" href="https://concert.io/">Concert ad units</a>, and the
+      <a class="u" href="https://www.chicityclerk.com/">Office of the Chicago City Clerk</a>.
+    </p>
+    <p>
+      Along the way, I’ve volunteered as a designer and webmaster for
+      <a class="u" href="http://a4th.org/">Artists for the Humanities</a> and
+      <a class="u" href="https://intersectionchicago.org/">Intersection</a>, and taught with
+      <a class="u" href="https://www.girldevelopit.com/">Girl Develop It Chicago</a>.
+    </p>
+    <p>
+      I also shoot photos and video, make wicked-good coffee, and answer to a golden retriever
+      and two kids.
+    </p>
+    <p>Want to say hi? <a class="u" href={askMe}>Ask me something</a>.</p>
+    <p class="sign">Stay safe out there.</p>
+  </div>
 </BaseLayout>

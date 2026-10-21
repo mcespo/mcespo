@@ -1,17 +1,12 @@
 ---
 import LogoIcon from './LogoIcon.astro';
+import { site } from '../site.config';
 
 interface Props {
   current?: 'writing' | 'projects' | 'contact';
 }
 
 const { current } = Astro.props;
-
-const links = [
-  { href: '/',         label: 'Writing',  id: 'writing'  },
-  { href: '/projects', label: 'Projects', id: 'projects' },
-  { href: '/contact',  label: 'Say hi',   id: 'contact'  },
-] as const;
 
 const themes = ['auto', 'light', 'dark'] as const;
 ---
@@ -83,6 +78,7 @@ const themes = ['auto', 'light', 'dark'] as const;
       padding: 0.25rem 0.625rem;
       border-radius: 999rem;
       text-transform: capitalize;
+      transition: color 0.25s ease, background-color 0.25s ease;
 
       &[aria-pressed="true"] {
         background: var(--ink);
@@ -92,18 +88,20 @@ const themes = ['auto', 'light', 'dark'] as const;
   }
 </style>
 
-<header>
+<header class="reveal">
   <a class="brand" href="/" aria-label="Marvin Céspedes, home">
     <LogoIcon size="2.75rem" />
     <span>Marvin Céspedes</span>
   </a>
 
   <div class="end">
-    <nav aria-label="Primary">
-      {links.map(({ href, label, id }) => (
-        <a href={href} aria-current={current === id ? 'page' : undefined}>{label}</a>
-      ))}
-    </nav>
+    {site.nav.length > 0 && (
+      <nav aria-label="Primary">
+        {site.nav.map(({ href, label, id }) => (
+          <a href={href} aria-current={current === id ? 'page' : undefined}>{label}</a>
+        ))}
+      </nav>
+    )}
 
     <div class="theme" role="group" aria-label="Color theme">
       {themes.map((mode) => (
@@ -139,6 +137,8 @@ const themes = ['auto', 'light', 'dark'] as const;
     return hour >= 19 || hour < 7;
   };
 
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
+
   const apply = (mode: Mode) => {
     document.documentElement.classList.toggle('dark', mode === 'auto' ? autoIsDark() : mode === 'dark');
     for (const button of buttons) {
@@ -151,7 +151,12 @@ const themes = ['auto', 'light', 'dark'] as const;
       const mode = button.dataset.mode as Mode;
       const { darkMode: _, ...prefs } = readPrefs();
       localStorage.setItem(KEY, JSON.stringify(mode === 'auto' ? prefs : { ...prefs, darkMode: mode }));
-      apply(mode);
+      // Cross-fade the theme change where supported; otherwise switch instantly.
+      if (document.startViewTransition && !reduceMotion.matches) {
+        document.startViewTransition(() => apply(mode));
+      } else {
+        apply(mode);
+      }
     });
   }
 

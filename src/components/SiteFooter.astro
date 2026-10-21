@@ -5,6 +5,7 @@ import { site } from '../site.config';
 
 <style>
   footer {
+    --reveal-offset: 900ms;
     margin-block-start: 4.5rem;
     padding-block: 3rem 5rem;
     border-block-start: 1px solid var(--rule);
@@ -19,16 +20,34 @@ import { site } from '../site.config';
       flex: none;
       color: var(--ink-3);
     }
+  }
+
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.25rem;
+    margin-block: 0.75rem;
+    padding: 0;
+    list-style: none;
 
     & a { color: var(--accent); }
   }
+
+  small {
+    font-size: 1rem;
+    color: var(--ink-3);
+  }
 </style>
 
-<footer>
+<footer class="reveal">
   <LogoIcon size="2.25rem" />
-  <p>
-    Thanks for stopping by. This site is hand-built, has no tracking, and is
-    best read slowly. Follow by <a class="u" href="/feed.xml">RSS</a> or
-    <a class="u" href={`mailto:${site.email}`}>email</a>.
-  </p>
+  <div>
+    <p>Thanks for stopping by.</p>
+    <ul aria-label="Elsewhere">
+      {site.social.map(({ label, href }) => (
+        <li><a class="u" href={href} rel="me">{label}</a></li>
+      ))}
+    </ul>
+    <small>© {new Date().getFullYear()} {site.name}</small>
+  </div>
 </footer>

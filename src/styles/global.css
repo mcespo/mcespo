@@ -113,6 +113,45 @@ body::before {
   50%      { background-position: 0 0, 100% 50%; }
 }
 
+/*
+ * Entrance: content comes into focus from a soft blur. `.reveal` animates one element;
+ * `.reveal-group` staggers its children. A parent's --reveal-offset delays the whole group.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal,
+  .reveal-group > * {
+    animation: reveal 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: calc(var(--reveal-offset, 0ms) + var(--i, 0) * 90ms);
+  }
+
+  .reveal-group > :nth-child(2) { --i: 1; }
+  .reveal-group > :nth-child(3) { --i: 2; }
+  .reveal-group > :nth-child(4) { --i: 3; }
+  .reveal-group > :nth-child(5) { --i: 4; }
+  .reveal-group > :nth-child(6) { --i: 5; }
+  .reveal-group > :nth-child(7) { --i: 6; }
+  .reveal-group > :nth-child(n + 8) { --i: 7; }
+
+  /* Theme switch: the old colors blur away while the new ones fade in. */
+  ::view-transition-old(root) { animation: 0.5s ease both theme-out; }
+  ::view-transition-new(root) { animation-duration: 0.5s; }
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    filter: blur(0.5rem);
+    translate: 0 0.5rem;
+  }
+}
+
+@keyframes theme-out {
+  to {
+    opacity: 0;
+    filter: blur(0.375rem);
+  }
+}
+
 /* Layered so Tailwind utilities can still override element defaults. */
 @layer base {
   body {
@@ -122,9 +161,11 @@ body::before {
     transition: color .3s;
   }
 
+  /* Color-only transitions aren't motion, so they stay on under reduced motion. */
   a {
     color: inherit;
     text-decoration: none;
+    transition: color 0.25s ease, text-decoration-color 0.25s ease;
 
     &:hover { color: var(--accent); }
   }
