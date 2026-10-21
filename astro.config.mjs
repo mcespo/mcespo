@@ -3,6 +3,8 @@ import { defineConfig, fontProviders } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
 import mdx from '@astrojs/mdx';
 
+import netlify from '@astrojs/netlify';
+
 export default defineConfig({
   site: 'https://mcespo.com',
 
@@ -50,4 +52,5 @@ export default defineConfig({
   },
 
   integrations: [mdx()],
+  adapter: netlify(),
 });
