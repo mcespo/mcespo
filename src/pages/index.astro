@@ -2,25 +2,10 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { site } from '../site.config';
 
-const description =
-  "Software Engineer, UX/UI Developer, and Designer. Marvin is broadly versed and pretty heckin' good at the code.";
-
 const askMe = `mailto:${site.email}?${new URLSearchParams({
   subject: "Oh hello Marvin, you're so cool!",
   body: 'I wish to be marginally as attractive as you are. Please help! Also, I wanted to ask...',
 }).toString().replaceAll('+', '%20')}`;
-
-const schema = {
-  '@context': 'https://schema.org',
-  '@type': 'Person',
-  name: site.name,
-  url: 'https://mcespo.com',
-  email: site.email,
-  jobTitle: 'Software Engineer',
-  worksFor: { '@type': 'Organization', name: 'Kin', url: 'https://www.kin.com/' },
-  address: { '@type': 'PostalAddress', addressLocality: 'Chicago', addressRegion: 'IL' },
-  sameAs: site.social.map(({ href }) => href),
-};
 ---
 
 <style>
@@ -48,7 +33,7 @@ const schema = {
   }
 </style>
 
-<BaseLayout title="Marvin Céspedes, Web Peep" description={description} schema={schema}>
+<BaseLayout pageType="ProfilePage">
   <section class="intro reveal-group" aria-labelledby="hello">
     <h1 id="hello">Howdy, I’m Marvin.</h1>
     <p>

@@ -1,5 +1,5 @@
-// Generates every favicon and app icon in public/ from the seal in LogoSprite.astro.
-// Run after changing the logo or brand colors: npm run favicons
+// Generates every favicon, app icon and the social share card in public/ from the seal in LogoSprite.astro.
+// Run after changing the logo or brand colors: npm run brand-images
 import { readFile, writeFile } from 'node:fs/promises';
 import sharp from 'sharp';
 
@@ -9,6 +9,8 @@ const colors = {
   accent:     [47.3, 0.186, 289],
   accentDark: [76,   0.12,  292],
   paper:      [97.5, 0.004, 295],
+  washA:      [94,   0.028, 296],
+  washB:      [95.5, 0.025, 60],
 };
 
 const sprite = await readFile(new URL('../src/components/LogoSprite.astro', import.meta.url), 'utf8');
@@ -63,6 +65,19 @@ async function png(size, { scale = 1, background = false } = {}) {
     .toBuffer();
 }
 
+// Social card at the 1.91:1 size every major platform crops to, on the same wash as the site background.
+async function ogCard() {
+  const [width, height, seal] = [1200, 630, 400];
+  const wash = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
+<defs><linearGradient id="w" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="${hex(colors.washA)}"/><stop offset="0.5" stop-color="${hex(colors.paper)}"/><stop offset="1" stop-color="${hex(colors.washB)}"/>
+</linearGradient></defs><rect width="100%" height="100%" fill="url(#w)"/></svg>`);
+  return sharp(wash)
+    .composite([{ input: await png(seal), gravity: 'center' }])
+    .png()
+    .toBuffer();
+}
+
 // ICO is a small header in front of PNGs; sharp can't write it, but every browser since IE11 reads PNG entries.
 function ico(images) {
   const header = Buffer.alloc(6 + 16 * images.length);
@@ -94,6 +109,7 @@ const files = {
   'icon-192.png': await png(192, { scale: 0.8, background: true }),
   'icon-512.png': await png(512, { scale: 0.8, background: true }),
   'icon-maskable-512.png': await png(512, { scale: 0.64, background: true }),
+  'og.png': await ogCard(),
   // JSON isn't CSS, and not every manifest consumer parses OKLCH, so colors are converted.
   'site.webmanifest': `${JSON.stringify(
     {

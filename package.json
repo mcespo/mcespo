@@ -13,7 +13,7 @@
     "prepare": "husky",
     "check-updates": "npm outdated",
     "check": "astro check",
-    "favicons": "node scripts/favicons.mjs"
+    "brand-images": "node scripts/brand-images.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^8.1.0",

@@ -281,8 +281,15 @@ Fraunces, Newsreader and JetBrains Mono are self-hosted with Astro's Fonts API (
 - Links inside running text need an underline (`.u`), not just a color change.
 - `Plate` requires `alt` whenever it has `src`; `YouTubeEmbed` requires `title`; posts with `heroImage` require `heroImageAlt`.
 
-### Favicons and app icons
-Everything in `public/` except hand-added assets is generated from the seal in `LogoSprite.astro` by `npm run favicons` (`scripts/favicons.mjs`): `favicon.svg` (switches color in dark mode), `favicon.ico` (16/32/48), `apple-touch-icon.png` (180), `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, and `site.webmanifest`. Rerun it after changing the logo or the accent/paper colors; never edit the outputs by hand. Colors are defined in OKLCH in the script and converted to sRGB only for the PNGs and manifest, which can't use OKLCH.
+### Head, social cards and schema
+`BaseLayout` writes every head tag from a few props: `title` (page name only; the layout appends " — Marvin Céspedes", omit it on the homepage), `description` (defaults to `site.description`), `image` (defaults to `site.ogImage`), `article` (adds `og:type=article` and `article:*` tags), `pageType` and `schema`. Pages never write `<meta>` tags themselves.
+
+Structured data lives in `src/lib/schema.ts`: every page emits one `@graph` with the shared `WebSite`, `Person` and a `WebPage` node, linked by `@id`. Pages add their own nodes through the `schema` prop. The homepage is a `ProfilePage`; the parked blog already uses `blog()` and `blogPosting()`, so its structured data works as soon as it's unparked. Validate changes with https://validator.schema.org.
+
+`@astrojs/sitemap` generates `sitemap-index.xml`, referenced from `public/robots.txt` and the head.
+
+### Favicons, app icons and the social card
+Everything in `public/` except `robots.txt` and other hand-added assets is generated from the seal in `LogoSprite.astro` by `npm run brand-images` (`scripts/brand-images.mjs`): `favicon.svg` (switches color in dark mode), `favicon.ico` (16/32/48), `apple-touch-icon.png` (180), `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `og.png` (1200×630 share card), and `site.webmanifest`. Rerun it after changing the logo or the accent/paper colors; never edit the outputs by hand. Colors are defined in OKLCH in the script and converted to sRGB only for the PNGs and manifest, which can't use OKLCH.
 
 ### Comments
 Keep comments light: one or two sentences that explain *why*, never a restatement of what the code does.
@@ -336,7 +343,7 @@ Everything required is committed: `.husky/commit-msg`, `commitlint.config.js`, a
 |------|------|
 | `src/styles/global.css` | All design tokens + site-wide patterns (reading grid, prose, animations) |
 | `src/layouts/BaseLayout.astro` | HTML shell, SEO meta, fonts, JSON-LD, dark-mode init, page chrome |
-| `src/site.config.ts` | Email, "Now" line, page size, pinned tags |
+| `src/site.config.ts` | Name, email, description, share image, Person details, nav, socials, page size |
 | `src/lib/writing.ts` | Stream/post queries, excerpt, reading time, date + tag helpers |
 | `src/components/SiteHeader.astro` | Brand mark, primary nav, Auto/Light/Dark theme pill |
 | `src/components/SiteFooter.astro` | Seal, sign-off, social links, copyright |
@@ -344,7 +351,8 @@ Everything required is committed: `.husky/commit-msg`, `commitlint.config.js`, a
 | `src/components/ChicagoStars.astro` | Four-star ornament under post headers |
 | `src/components/LogoSprite.astro` | The seal's paths as an SVG `<symbol>`, rendered once per page |
 | `src/components/LogoIcon.astro` | `<use>` reference to the seal, in `currentColor` |
-| `scripts/favicons.mjs` | Generates favicons, app icons and the web manifest into `public/` |
+| `scripts/brand-images.mjs` | Generates favicons, app icons, the share card and web manifest into `public/` |
+| `src/lib/schema.ts` | Schema.org graph builders: WebSite, Person, WebPage, Blog, BlogPosting |
 | `src/components/Plate.astro` | Image or striped placeholder with italic caption |
 | `src/components/Note.astro` | Sticky-note callout aside |
 | `src/components/YouTubeEmbed.astro` | Privacy-safe YouTube iframe with caption |

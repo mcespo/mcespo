@@ -13,6 +13,7 @@ import {
   titleText,
 } from '../../lib/writing';
 import { site } from '../../site.config';
+import { blog, blogPosting } from '../../lib/schema';
 
 export async function getStaticPaths() {
   const posts = await getPosts();
@@ -33,19 +34,12 @@ const { Content } = await render(post);
 
 const title = titleText(post.data.title);
 const writeBack = `mailto:${site.email}?subject=${encodeURIComponent(`Re: ${title}`)}`;
-const author = { '@type': 'Person', name: site.name, url: 'https://mcespo.com' };
-
-const schema = {
-  '@context': 'https://schema.org',
-  '@type': 'BlogPosting',
-  headline: title,
-  description: post.data.description,
-  datePublished: post.data.publishDate.toISOString(),
-  keywords: post.data.tags.join(', '),
-  url: new URL(`/posts/${post.id}`, Astro.site).href,
-  author,
-  publisher: author,
-};
+// A post's hero doubles as its share image; otherwise the site card stands in.
+const image = post.data.heroImage
+  ? { src: post.data.heroImage, alt: post.data.heroImageAlt ?? '' }
+  : site.ogImage;
+const url = new URL(Astro.url.pathname, Astro.site).href;
+const schema = [blog(), blogPosting(post, url, new URL(image.src, Astro.site).href)];
 ---
 
 <style>
@@ -85,11 +79,10 @@ const schema = {
 </style>
 
 <BaseLayout
-  title={`${title} — Marvin Céspedes`}
+  title={title}
   description={post.data.description}
-  ogImage={post.data.heroImage && new URL(post.data.heroImage, Astro.site).href}
-  ogImageAlt={post.data.heroImageAlt}
-  ogType="article"
+  image={image}
+  article={{ published: post.data.publishDate, section: post.data.category, tags: post.data.tags }}
   schema={schema}
   nav="writing"
 >

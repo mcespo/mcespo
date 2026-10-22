@@ -2,24 +2,16 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Stream from '../../components/Stream.astro';
 import { getStream } from '../../lib/writing';
-import { site } from '../../site.config';
+import { blog } from '../../lib/schema';
 
 const stream = await getStream();
-
-const schema = {
-  '@context': 'https://schema.org',
-  '@type': 'Blog',
-  name: `${site.name} — Writing`,
-  url: 'https://mcespo.com/posts',
-  description: 'Essays, notes, and things I needed to write down.',
-  author: { '@type': 'Person', name: site.name, url: 'https://mcespo.com' },
-};
 ---
 
 <BaseLayout
-  title="Writing — Marvin Céspedes"
+  title="Writing"
   description="Essays, notes, and things I needed to write down."
-  schema={schema}
+  pageType="CollectionPage"
+  schema={[blog()]}
   nav="writing"
 >
   <header class="intro">

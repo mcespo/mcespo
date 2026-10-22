@@ -23,8 +23,9 @@ const { page, total, items } = Astro.props;
 ---
 
 <BaseLayout
-  title={`Writing, page ${page} — Marvin Céspedes`}
+  title={`Writing, page ${page}`}
   description="Essays, notes, and things I needed to write down."
+  pageType="CollectionPage"
   nav="writing"
 >
   <h1 class="sr-only">Writing, page {page} of {total}</h1>
