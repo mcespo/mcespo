@@ -17,12 +17,11 @@
     "serve:dist": "npx --yes serve@14 dist -l 4400",
     "a11y": "npx --yes pa11y-ci@4 --sitemap http://localhost:4400/sitemap-0.xml --sitemap-find https://mcespo.com --sitemap-replace http://localhost:4400",
     "test:a11y": "npm run a11y && THEME=dark npm run a11y",
-    "test:links": "lychee --config lychee.toml --no-progress 'dist/**/*.html'",
+    "test:links": "lychee --config lychee.toml --no-progress 'dist/**/*.html' dist/llms.txt",
     "fonts": "node scripts/fonts.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^8.1.0",
-    "@astrojs/netlify": "^8.2.10",
     "@astrojs/sitemap": "^3.7.4",
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.4.1",

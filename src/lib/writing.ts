@@ -35,7 +35,7 @@ export function postTags(post: Post): string[] {
   return [post.data.category, ...post.data.tags].map(tagSlug);
 }
 
-/** Titles may use *asterisks* for italics. Author-written, so safe for set:html. */
+/** *Asterisks* become italics. Author-written, so safe for set:html. */
 export function titleHtml(title: string): string {
   return title.replace(/\*(.+?)\*/g, '<em>$1</em>');
 }
@@ -44,12 +44,12 @@ export function titleText(title: string): string {
   return title.replace(/\*(.+?)\*/g, '$1');
 }
 
-/** The opening paragraph as plain text; the design uses it as the stream excerpt. */
+/** Opening paragraph as plain text, for the stream excerpt. */
 export function excerpt(post: Post): string {
   const block = (post.body ?? '')
     .split(/\n\s*\n/)
     .map((b) => b.trim())
-    // Skip anything that isn't prose: headings, MDX imports, components, quotes, code, lists, images.
+    // Skip non-prose: headings, imports, components, quotes, code, lists, images.
     .find((b) => b && !/^(#|import\s|export\s|<(?!p[\s>])|>|```|[-*+]\s|\d+\.\s|!\[|\[\^)/.test(b));
 
   if (!block) return post.data.description;
@@ -70,12 +70,12 @@ export function readingMinutes(post: Post): number {
   return Math.max(1, Math.round(words / 230));
 }
 
-// Frontmatter dates parse as UTC midnight, so format in UTC or they show a day early in the Americas.
+// Frontmatter dates are UTC midnight; formatting in UTC stops them showing a day early.
 export function longDate(d: Date): string {
   return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
 }
 
-/** Drops the year for the current year: "March 18" vs "March 18, 2025". */
+/** "March 18" this year, "March 18, 2025" otherwise. */
 export function shortDate(d: Date): string {
   const sameYear = d.getUTCFullYear() === new Date().getUTCFullYear();
   return d.toLocaleDateString('en-US', {

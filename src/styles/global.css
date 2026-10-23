@@ -3,16 +3,12 @@
 @theme {
   --color-ink:        oklch(13%   0.018 289);   /* #181620 */
   --color-ink-2:      oklch(38.8% 0.025 290);   /* #4e4b5c */
-  /* Darker than the design's 62.8% (#9793a3), which was ~3:1 on the background — this clears WCAG AA 4.5:1. */
+  /* Darkened from the design's 62.8% (#9793a3) to pass WCAG AA 4.5:1. */
   --color-ink-3:      oklch(52.4% 0.021 295);
   --color-paper:      oklch(97.5% 0.004 295);   /* #f7f6f8 */
   --color-paper-2:    oklch(94.4% 0.007 292);   /* #ecebef */
   --color-accent:     oklch(47.3% 0.186 289);   /* #6d4ac2 — identity */
-  /*
-   * Orange is the interaction color: links, hover, focus. The design's 64.5% (#d46e25) is 2.9:1 on the
-   * background; 63.6% looks the same and clears the 3:1 that underlines and focus rings need.
-   * Text set in orange needs 4.5:1, which takes the deeper -strong tone.
-   */
+  /* Orange is for interaction. Base passes 3:1 (underlines, focus); -strong passes 4.5:1 (text). Design: #d46e25. */
   --color-accent-2:        oklch(63.6% 0.152 51);   /* #d16b21 */
   --color-accent-2-strong: oklch(53.7% 0.152 51);   /* #af4c00 */
   --color-sticky:     oklch(90.6% 0.038 296);   /* #e7dff7 */
@@ -20,7 +16,6 @@
   --color-code-bg:    oklch(93.8% 0.025 296);   /* #ece7f5 */
   --color-chi-red:    oklch(58%   0.21  27);
 
-  /* The --font-* sources are self-hosted by Astro (see astro.config.mjs). */
   --font-display: var(--font-fraunces);
   --font-body:    var(--font-newsreader);
   --font-mono:    var(--font-jetbrains);
@@ -45,10 +40,7 @@
   --wash-a:     oklch(94%   0.028 296);
   --wash-b:     oklch(95.5% 0.025 60);
 
-  /*
-   * Fluid type: each size grows linearly from a 360px phone to a 1920px display, then holds.
-   * The rem part keeps browser zoom working; every max stays under 2.5x its min (WCAG 1.4.4).
-   */
+  /* Fluid type from 360px to 1920px. Max ≤ 2.5× min keeps browser zoom working (WCAG 1.4.4). */
   --text-meta:    clamp(1rem, 0.9712rem + 0.1282vw, 1.125rem);
   --text-ui:      clamp(1.0625rem, 1.0048rem + 0.2564vw, 1.3125rem);
   --text-brand:   clamp(1.1875rem, 1.1154rem + 0.3205vw, 1.5rem);
@@ -63,14 +55,14 @@
   --text-h1:      clamp(2.875rem, 2.3269rem + 2.4359vw, 5.25rem);
   --text-title:   clamp(2.875rem, 2.2692rem + 2.6923vw, 5.5rem);
 
-  /* Fraunces display cut, used by every display-face heading. */
+  /* Fraunces display cut. */
   --dv: "opsz" 144, "SOFT" 50, "WONK" 0;
 
   --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
 
 }
 
-/* A class rather than prefers-color-scheme so the header toggle can override the OS. */
+/* A class, not prefers-color-scheme, so the toggle can override the OS. */
 html.dark {
   color-scheme: dark;
 
@@ -81,7 +73,7 @@ html.dark {
   --color-paper-2:    oklch(21%   0.016 290);
   --color-accent:     oklch(76%   0.12  292);
   --color-accent-2:        oklch(75%   0.13  55);
-  /* Already 7.8:1 on the dark background, so text can use the same orange. */
+  /* Passes 4.5:1 on dark, so text can use it too. */
   --color-accent-2-strong: oklch(75%   0.13  55);
   --color-sticky:     oklch(26%   0.055 290);
   --color-sticky-ink: oklch(91%   0.035 296);
@@ -100,10 +92,7 @@ html {
   }
 }
 
-/*
- * The drifting wash lives on its own fixed layer so each animation frame
- * repaints only this layer, not the page content, and scrolling repaints nothing.
- */
+/* Own fixed layer, so animation frames repaint only the background. */
 body::before {
   content: "";
   position: fixed;
@@ -129,10 +118,7 @@ body::before {
   50%      { background-position: 0 0, 100% 50%; }
 }
 
-/*
- * Entrance: content comes into focus from a soft blur. `.reveal` animates one element;
- * `.reveal-group` staggers its children. A parent's --reveal-offset delays the whole group.
- */
+/* Blur-in entrance: .reveal for one element, .reveal-group to stagger children, --reveal-offset to sequence. */
 @media (prefers-reduced-motion: no-preference) {
   .reveal,
   .reveal-group > * {
@@ -148,10 +134,10 @@ body::before {
   .reveal-group > :nth-child(7) { --i: 6; }
   .reveal-group > :nth-child(n + 8) { --i: 7; }
 
-  /* Cross-fades between pages once the parked sections return; no JS needed. */
+  /* Cross-fades page changes; no JS. */
   @view-transition { navigation: auto; }
 
-  /* Theme switch: the old colors blur away while the new ones fade in. */
+  /* Theme switch: old colors blur out as new ones fade in. */
   ::view-transition-old(root) { animation: 0.5s ease both theme-out; }
   ::view-transition-new(root) { animation-duration: 0.5s; }
 }
@@ -171,7 +157,7 @@ body::before {
   }
 }
 
-/* Layered so Tailwind utilities can still override element defaults. */
+/* Layered so Tailwind utilities still win. */
 @layer base {
   body {
     margin: 0;
@@ -180,7 +166,7 @@ body::before {
     transition: color .3s;
   }
 
-  /* Color-only transitions aren't motion, so they stay on under reduced motion. */
+  /* Color fades aren't motion, so they stay on under reduced motion. */
   a {
     color: inherit;
     text-decoration: none;
@@ -223,7 +209,7 @@ body::before {
 }
 
 .col {
-  /* Widens with the type above 1280px so lines stay around 70 characters. */
+  /* Widens with the type so lines stay ~70 characters. */
   max-inline-size: clamp(42.5rem, 15.5rem + 33.75vw, 56rem);
   margin-inline: auto;
   padding-inline: 2rem;
@@ -243,7 +229,7 @@ body::before {
   &:focus-visible { translate: none; }
 }
 
-/* Accent underline — the only cue for links set in body color. */
+/* Marks links set in body color. */
 .u {
   text-decoration: underline;
   text-decoration-color: var(--accent-2);

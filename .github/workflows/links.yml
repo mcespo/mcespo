@@ -1,5 +1,4 @@
-# Monthly check that every link on the site still works. Third-party sites change without notice,
-# so this runs on a schedule rather than on push, and opens an issue instead of failing a build.
+# Monthly link check. Opens an issue rather than failing a build, since outside sites change without notice.
 name: Link check
 
 on:
@@ -33,7 +32,7 @@ jobs:
         id: lychee
         uses: lycheeverse/lychee-action@v2
         with:
-          args: --config lychee.toml --no-progress 'dist/**/*.html'
+          args: --config lychee.toml --no-progress 'dist/**/*.html' dist/llms.txt
           fail: false
 
       - name: Open an issue listing broken links

@@ -12,12 +12,7 @@
   --astro-code-token-link:              var(--accent);
 }
 
-/*
- * Post body, loaded only by the post template so other pages don't ship it.
- * Flex column so the template's sign-off can sit above the
- * footnotes Markdown appends last; flex margins don't collapse, so the
- * space after breakout elements goes on the next sibling.
- */
+/* Post-only styles. Flex column puts the sign-off above the footnotes; margins don't collapse, so breakout spacing sits on the next sibling. */
 .art {
   display: flex;
   flex-direction: column;
@@ -30,7 +25,7 @@
     font-family: var(--font-display);
     font-variation-settings: var(--dv);
     float: inline-start;
-    /* em-based so the drop cap tracks the fluid body size. */
+    /* em, so it tracks the fluid body size. */
     font-size: 4.4em;
     line-height: 0.8;
     padding-block-start: 0.5rem;
@@ -150,7 +145,7 @@
     line-height: 1.6;
     color: var(--ink-2);
 
-    /* GFM's "Footnotes" heading: kept for screen readers, hidden visually. */
+    /* Hidden visually, kept for screen readers. */
     & #footnote-label {
       position: absolute;
       inline-size: 1px;
@@ -190,7 +185,7 @@
   }
 }
 
-/* Note.astro — matches the note cards in the writing stream. */
+/* Note.astro, styled like the stream's note cards. */
 aside.note {
   background: var(--sticky);
   color: var(--sticky-ink);

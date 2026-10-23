@@ -10,8 +10,8 @@ timeout = 20
 exclude = [
   # LinkedIn answers automated requests with status 999, so it always looks broken.
   "^https://www\\.linkedin\\.com/",
-  # Canonical, Open Graph and sitemap URLs point at production, which doesn't match the local build.
+  # Production URLs (canonical, OG, sitemap) don't match the local build.
   "^https://mcespo\\.com/",
-  # Inline images in the CSS, like the background noise texture, aren't links.
+  # Inline CSS images aren't links.
   "^data:",
 ]

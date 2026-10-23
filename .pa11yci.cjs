@@ -1,6 +1,5 @@
-// Accessibility check (WCAG 2 AA, axe rules) for every page in the sitemap.
-// THEME=dark starts the browser in system dark mode, so the site's Auto theme renders dark from the first paint.
-// Reduced motion keeps the blur-in from leaving half-faded text for the contrast check to measure.
+// WCAG 2 AA (axe) for every page in the sitemap. THEME=dark sets the system preference, so Auto renders dark.
+// Reduced motion stops the blur-in from skewing contrast results.
 const dark = process.env.THEME === 'dark';
 
 module.exports = {

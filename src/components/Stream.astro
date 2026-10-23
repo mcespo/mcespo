@@ -12,9 +12,9 @@ import {
 } from '../lib/writing';
 
 interface Props {
-  /** Already sorted, newest first. */
+  /** Sorted newest first. */
   items: StreamItem[];
-  /** The pagination row only renders when there's more than one page. */
+  /** Pagination shows only when total > 1. */
   page?: number;
   total?: number;
 }
@@ -44,7 +44,7 @@ const rendered = await Promise.all(
       transition: color .2s;
     }
 
-    /* Stretches the title link over the whole card, so there's one link per post for screen readers. */
+    /* Whole card is clickable via one link, so screen readers hear each post once. */
     & h2 a::after {
       content: "";
       position: absolute;

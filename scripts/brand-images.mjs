@@ -21,7 +21,7 @@ const viewBox = '0 -7.7 528.3 528.3';
 const oklch = ([l, c, h]) => `oklch(${l}% ${c} ${h})`;
 const pathMarkup = (fill = '') => paths.map((d) => `<path${fill} d="${d}"/>`).join('');
 
-// Browser tabs: the browser applies its own light/dark scheme, so the SVG carries both colors.
+// Tabs follow the browser's light/dark scheme, so the SVG carries both colors.
 const faviconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}">
 <style>path{fill:${oklch(colors.accent)}}@media (prefers-color-scheme:dark){path{fill:${oklch(colors.accentDark)}}}</style>
 ${pathMarkup()}
@@ -65,7 +65,7 @@ async function png(size, { scale = 1, background = false } = {}) {
     .toBuffer();
 }
 
-// Social card at the 1.91:1 size every major platform crops to, on the same wash as the site background.
+// 1200×630 share card on the site's background wash.
 async function ogCard() {
   const [width, height, seal] = [1200, 630, 400];
   const wash = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
@@ -78,7 +78,7 @@ async function ogCard() {
     .toBuffer();
 }
 
-// ICO is a small header in front of PNGs; sharp can't write it, but every browser since IE11 reads PNG entries.
+// sharp can't write ICO, so build it: a small header in front of PNG entries.
 function ico(images) {
   const header = Buffer.alloc(6 + 16 * images.length);
   header.writeUInt16LE(1, 2);

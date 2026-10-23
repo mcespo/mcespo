@@ -21,7 +21,7 @@ const posts = defineCollection({
   }),
 });
 
-// Untitled short posts: sticky cards in the stream, with no page of their own.
+// Untitled short posts for the stream; no page of their own.
 const notes = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/notes' }),
   schema: z.object({

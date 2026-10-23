@@ -39,7 +39,7 @@ const themes = ['auto', 'light', 'dark'] as const;
     &:hover :global(svg) {
       color: var(--accent-2-strong);
 
-      /* Hover-capable devices only, so the tilt doesn't stick after a tap. */
+      /* Hover devices only, so the tilt doesn't stick after a tap. */
       @media (hover: hover) and (prefers-reduced-motion: no-preference) { rotate: -14deg; }
     }
 
@@ -49,7 +49,7 @@ const themes = ['auto', 'light', 'dark'] as const;
     }
   }
 
-  /* Wraps under the brand on narrow screens instead of hiding the nav, which the design left without a mobile fallback. */
+  /* Wraps under the brand on narrow screens rather than hiding the nav. */
   .end {
     display: flex;
     align-items: center;
@@ -130,7 +130,7 @@ const themes = ['auto', 'light', 'dark'] as const;
     return darkMode === 'dark' || darkMode === 'light' ? darkMode : 'auto';
   };
 
-  // No system preference at all falls back to night hours (7 pm – 7 am).
+  // No system preference: dark from 7 pm to 7 am.
   const autoIsDark = () => {
     if (prefersDark.matches) return true;
     if (prefersLight.matches) return false;
@@ -152,7 +152,7 @@ const themes = ['auto', 'light', 'dark'] as const;
       const mode = button.dataset.mode as Mode;
       const { darkMode: _, ...prefs } = readPrefs();
       localStorage.setItem(KEY, JSON.stringify(mode === 'auto' ? prefs : { ...prefs, darkMode: mode }));
-      // Cross-fade the theme change where supported; otherwise switch instantly.
+      // Cross-fade where supported.
       if (document.startViewTransition && !reduceMotion.matches) {
         document.startViewTransition(() => apply(mode));
       } else {

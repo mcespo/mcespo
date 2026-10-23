@@ -288,6 +288,18 @@ Type is the centerpiece, so every font size comes from the fluid `--text-*` toke
 - Fonts are self-hosted and trimmed (see Fonts): about 218 KB in total, with 152 KB preloaded.
 - Last measured with Lighthouse: 100 in every category on desktop, and 99 performance plus 100 elsewhere on mobile (LCP 2.3s on simulated slow 4G), with zero layout shift and zero blocking time.
 
+### Hosting and security
+- **Fully static, no adapter.** Netlify publishes `dist/` (`netlify.toml`). Don't add `@astrojs/netlify` unless a page genuinely needs to render per request: it adds a serverless function to every deploy, and its dependency chain was the source of every `npm audit` warning.
+- **Content Security Policy** (`security.csp` in `astro.config.mjs`): Astro fingerprints every script and style it builds and emits the policy as a `<meta>` tag, so the browser refuses anything injected. Lighthouse's "CSP is effective against XSS" audit passes. Rules that follow from it:
+  - Any third-party script, style, font, image host or iframe must be added to the CSP `directives`. `frame-src` already allows `youtube-nocookie.com` for `YouTubeEmbed`.
+  - Inline `style=""` attributes are allowed (`style-src-attr`), because Astro can't fingerprint them and the logo and Shiki use them. They can't run code.
+  - The `<meta>` policy only governs what comes after it in the page. That's fine, since everything earlier in `<head>` is our own static code.
+  - CSP doesn't run under `npm run dev`; test with `npm run build` plus `npm run serve:dist`.
+  - Framing is blocked by the `frame-ancestors` header in `netlify.toml`, since a `<meta>` CSP can't set it.
+- **404 page:** `src/pages/404.astro`, with `noindex` and kept out of the sitemap. Netlify serves it with a 404 status.
+- **`/.well-known/security.txt`** (RFC 9116) is generated at build time (`src/pages/.well-known/security.txt.ts`). Its required `Expires` date is set 360 days out and renews on every deploy. If the site goes nearly a year without a deploy, redeploy to refresh it.
+- **Don't add other `/.well-known/` files** (passkeys, change-password and the like) unless the site gains accounts. A 404 is the correct answer for things the site doesn't do.
+
 ### Links
 External links open in the same tab: no `target="_blank"`, so no `rel="noopener"` is needed, and visitors keep control of new tabs. Social profile links carry `rel="me"`. Use the final `https` URL for every link; the link check flags redirects.
 
@@ -317,11 +329,18 @@ Structured data lives in `src/lib/schema.ts`: every page emits one `@graph` with
 
 `@astrojs/sitemap` generates `sitemap-index.xml`, referenced from `public/robots.txt` and the head.
 
+**For AI tools:** `src/pages/llms.txt.ts` builds `/llms.txt`, a plain-Markdown summary in the llmstxt.org format: who you are, your experience, focus areas and links. Name, description, role, focus areas and links come from `site.config.ts`; the experience and volunteering lists mirror the homepage bio, so **update both together**. It's linked from the head (`rel="alternate" type="text/markdown"`), mentioned in `robots.txt`, and included in the link check. `robots.txt` allows all crawlers, AI ones included.
+
 ### Favicons, app icons and the social card
 Everything in `public/` except `robots.txt` and other hand-added assets is generated from the seal in `LogoSprite.astro` by `npm run brand-images` (`scripts/brand-images.mjs`): `favicon.svg` (switches color in dark mode), `favicon.ico` (16/32/48), `apple-touch-icon.png` (180), `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `og.png` (1200×630 share card), and `site.webmanifest`. Rerun it after changing the logo or the accent/paper colors; never edit the outputs by hand. Colors are defined in OKLCH in the script and converted to sRGB only for the PNGs and manifest, which can't use OKLCH.
 
 ### Comments
-Keep comments light: one or two sentences that explain *why*, never a restatement of what the code does.
+Comments are notes for the developer, not for visitors, and should never reach the browser.
+- **Short:** one line that explains *why*, never a restatement of what the code does. Two short sentences at most.
+- **In templates:** use `{/* … */}`, which Astro strips at build time. Never use `<!-- … -->`; HTML comments ship in the page source.
+- **In frontmatter, `<style>` and bundled `<script>`:** use normal `//` or `/* */`. These are removed at build time.
+- **Never inside `<script is:inline>`:** inline scripts are copied as-is, so put the comment above the tag as `{/* … */}`.
+- **In Markdown posts:** avoid `<!-- -->`, which also ships. In MDX, use `{/* … */}`.
 
 ### Content collections
 - Config lives at `src/content.config.ts` (NOT `src/content/config.ts`)
@@ -407,6 +426,9 @@ Everything required is committed: `.husky/commit-msg`, `commitlint.config.js`, a
 | `src/content/posts/*.mdx` | Blog posts that need inline components |
 | `src/content/notes/*.md` | Short untitled notes |
 | `src/pages/index.astro` | Home: intro + bio (the only live page) |
+| `src/pages/llms.txt.ts` | `/llms.txt` Markdown summary for AI tools |
+| `src/pages/404.astro` | Not-found page (noindex) |
+| `src/pages/.well-known/security.txt.ts` | RFC 9116 security contact, renewed each build |
 | `src/pages/_page/[page].astro` | *Parked* — stream pages 2+ |
 | `src/pages/_posts/index.astro` | *Parked* — full archive |
 | `src/pages/_posts/[...slug].astro` | *Parked* — blog post template |

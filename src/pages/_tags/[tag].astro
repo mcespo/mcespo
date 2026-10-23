@@ -6,7 +6,7 @@ import { site } from '../../site.config';
 
 export async function getStaticPaths() {
   const posts = await getPosts();
-  // Pinned tags get a page before any post uses them, so the homepage intro never links to a 404.
+  // Pinned tags build even before a post uses them.
   const tags = new Set([...site.pinnedTags.map(tagSlug), ...posts.flatMap(postTags)]);
 
   return [...tags].map((tag) => ({

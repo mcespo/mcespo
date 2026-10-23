@@ -1,8 +1,5 @@
 ---
-/**
- * Captioned figure that breaks out of the post column on wide screens.
- * Without `src` it renders a striped placeholder showing `label`.
- */
+/** Captioned figure; without `src` it shows a striped placeholder. */
 
 type Props = {
   /** Trusted HTML, so captions can use <em>. */
@@ -12,7 +9,7 @@ type Props = {
   ratio?: string;
   class?: string;
 } & (
-  // An image must say what it shows; the type check catches a missing alt.
+  // Images require alt text.
   | { src: string; alt: string; label?: never }
   | { src?: never; alt?: never; label?: string }
 );

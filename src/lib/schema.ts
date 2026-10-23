@@ -1,7 +1,4 @@
-/**
- * Schema.org JSON-LD. Every page emits one @graph whose nodes point at each other by @id,
- * so the WebSite, the Person and later the Blog are each described once and referenced everywhere.
- */
+/** Schema.org graph: nodes reference each other by @id, so each is described once. */
 import { site } from '../site.config';
 import type { Post } from './writing';
 import { titleText } from './writing';
@@ -57,7 +54,7 @@ export function webPage(opts: { url: string; title: string; description: string;
     inLanguage: 'en-US',
     isPartOf: ref(ids.website),
     primaryImageOfPage: { '@type': 'ImageObject', url: image },
-    // A profile page is about its subject; every other page is about the site's author.
+    // A profile page is about its subject; other pages are about the author.
     ...(type === 'ProfilePage' ? { mainEntity: ref(ids.person) } : { about: ref(ids.person) }),
   };
 }
