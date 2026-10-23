@@ -47,8 +47,8 @@ const jsonLd = graph([
   ...schema,
 ]);
 
-// Only the roman Latin cuts are needed above the fold; italics and code load on demand.
-const preload = [{ style: 'normal', subset: 'latin' }];
+// Only the roman cuts are needed above the fold; italics and code load on demand.
+const preload = [{ style: 'normal' }];
 ---
 
 <!doctype html>

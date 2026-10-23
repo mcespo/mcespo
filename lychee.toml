@@ -1,0 +1,17 @@
+# Link check for the built site. Run after `npm run build`: npm run test:links
+
+# Resolve site-relative links like /favicon.svg against the build output.
+root_dir = "dist"
+
+# Retries ride out third-party sites that are briefly slow or down.
+max_retries = 3
+timeout = 20
+
+exclude = [
+  # LinkedIn answers automated requests with status 999, so it always looks broken.
+  "^https://www\\.linkedin\\.com/",
+  # Canonical, Open Graph and sitemap URLs point at production, which doesn't match the local build.
+  "^https://mcespo\\.com/",
+  # Inline images in the CSS, like the background noise texture, aren't links.
+  "^data:",
+]

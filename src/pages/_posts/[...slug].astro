@@ -14,6 +14,7 @@ import {
 } from '../../lib/writing';
 import { site } from '../../site.config';
 import { blog, blogPosting } from '../../lib/schema';
+import '../../styles/prose.css';
 
 export async function getStaticPaths() {
   const posts = await getPosts();
@@ -51,21 +52,17 @@ const schema = [blog(), blogPosting(post, url, new URL(image.src, Astro.site).hr
     gap: 1.25rem;
     align-items: center;
 
-    & .meta a { color: var(--accent); }
-
     & h1 {
-      font-size: 4.25rem;
+      font-size: var(--text-title);
       line-height: 1;
       letter-spacing: -0.02em;
       font-weight: 360;
       max-inline-size: 40rem;
-
-      @media (width <= 37.5rem) { font-size: 2.875rem; }
     }
   }
 
   .dek {
-    font-size: 1.4375rem;
+    font-size: var(--text-lede);
     line-height: 1.45;
     color: var(--ink-2);
     max-inline-size: 33.75rem;
@@ -73,7 +70,7 @@ const schema = [blog(), blogPosting(post, url, new URL(image.src, Astro.site).hr
 
   .next {
     margin-block-start: 3.5rem;
-    font-size: 1.1875rem;
+    font-size: var(--text-ui);
     line-height: 1.6;
   }
 </style>

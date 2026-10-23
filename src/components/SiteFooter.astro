@@ -12,7 +12,7 @@ import { site } from '../site.config';
     display: flex;
     gap: 1.25rem;
     align-items: flex-start;
-    font-size: 1.125rem;
+    font-size: var(--text-ui);
     line-height: 1.6;
     color: var(--ink-2);
 
@@ -29,18 +29,16 @@ import { site } from '../site.config';
     margin-block: 0.75rem;
     padding: 0;
     list-style: none;
-
-    & a { color: var(--accent); }
   }
 
   small {
-    font-size: 1rem;
+    font-size: var(--text-meta);
     color: var(--ink-3);
   }
 </style>
 
 <footer class="reveal">
-  <LogoIcon size="2.25rem" />
+  <LogoIcon size="2em" />
   <div>
     <p>Thanks for stopping by.</p>
     <ul aria-label="Elsewhere">

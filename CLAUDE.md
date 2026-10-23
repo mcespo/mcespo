@@ -69,6 +69,13 @@ When adding a new color:
 - Orange family (interaction only): H ≈ 51°
 - Neutral-violet: H ≈ 292–296°
 
+**How the two accents are used:**
+- **Orange is for interaction:** link underlines, hover, focus rings, and anything that tells the reader "this is clickable".
+  - `--accent-2` (`oklch(63.6% 0.152 51)`) is for underlines and focus rings, which need 3:1. It's the design's orange nudged 1% darker to clear that.
+  - `--accent-2-strong` (`oklch(53.7% 0.152 51)`) is for orange *text*, like hovered links or "Continue reading", which needs 4.5:1. In dark mode both tokens are the same orange, which already clears 7:1.
+- **Violet is for identity:** the drop cap, note cards, text selection, footnote numbers and code highlighting. Don't use it for links.
+- **Links keep the surrounding text color and get an orange underline** (`.u`, or automatically inside `.art`). Don't color link text orange at rest; one consistent link style avoids needing the darker orange.
+
 ---
 
 ## Astro best practices
@@ -263,10 +270,26 @@ Toggled via `.dark` on `<html>` (not `prefers-color-scheme`). The header's Auto 
 The inline `is:inline` script in `BaseLayout.astro` reads localStorage and applies `.dark` before first paint — this prevents a flash of the wrong theme. Never remove or defer it.
 
 ### Layout
-Every page is one `.col` column (`42.5rem` max) holding `SiteHeader`, `<main>` and `SiteFooter`. Post bodies render into `<article class="art">` (styles in `global.css`). Breakpoints: `56.25rem` (pull quotes and figures stop breaking out) and `37.5rem` (smaller type).
+Every page is one `.col` column holding `SiteHeader`, `<main>` and `SiteFooter`. It's `42.5rem` up to a 1280px viewport, then widens to `56rem` at 1920px so lines stay around 70 characters as the type grows. Post bodies render into `.art`, styled by `src/styles/prose.css`, which only the post template (and `Note.astro`) import so other pages don't ship it. The one remaining layout breakpoint is `56.25rem`, where pull quotes and figures stop breaking out of the column.
+
+### Typography
+Type is the centerpiece, so every font size comes from the fluid `--text-*` tokens in `global.css`: meta, ui, brand, excerpt, body, lede, sign, h3, h2, quote, entry, h1 and title. Each `clamp()` grows linearly from a 360px phone to a 1920px display, then holds, so there are no per-breakpoint font-size overrides. Rules for new sizes:
+- Add a token rather than a one-off size. Pick a phone and a 1920px value and derive the clamp: slope = (max − min) / 97.5, giving `calc(min − slope × 22.5)rem + (slope × 100)vw`.
+- Keep the max under 2.5× the min, and always include a rem term, so browser zoom keeps working (WCAG 1.4.4).
+- Size things that belong to a piece of text in `em` (the drop cap, the logo, theme buttons, code), so they track their text.
 
 ### Site config
 `src/site.config.ts` holds the email, header nav (empty while only the homepage is live), social links, stream page size, and the pinned tags for the parked tag pages.
+
+### Performance
+- CSS is inlined into each page (`build.inlineStylesheets: 'always'`): it's small, and inlining removes a render-blocking request. Keep page-specific CSS in the page or component that needs it (like `prose.css`) so it doesn't inflate every page.
+- The header's script is inlined by Astro too; the page makes no JS requests. Keep it that way: no new client-side libraries for things CSS can do.
+- `netlify.toml` gives hashed `/_astro/*` assets a one-year immutable cache, and sets baseline security headers (HSTS, nosniff, referrer policy, a Permissions-Policy, and a `frame-ancestors 'none'` CSP).
+- Fonts are self-hosted and trimmed (see Fonts): about 218 KB in total, with 152 KB preloaded.
+- Last measured with Lighthouse: 100 in every category on desktop, and 99 performance plus 100 elsewhere on mobile (LCP 2.3s on simulated slow 4G), with zero layout shift and zero blocking time.
+
+### Links
+External links open in the same tab: no `target="_blank"`, so no `rel="noopener"` is needed, and visitors keep control of new tabs. Social profile links carry `rel="me"`. Use the final `https` URL for every link; the link check flags redirects.
 
 ### Animations
 All animations and transitions must respect `prefers-reduced-motion`. See the pattern in `global.css`. Animate on a dedicated layer (like the `body::before` background) rather than on elements that contain content, so frames don't repaint the page.
@@ -274,11 +297,17 @@ All animations and transitions must respect `prefers-reduced-motion`. See the pa
 Entrance animations use the shared blur-in in `global.css`: add `reveal` to one element, or `reveal-group` to a parent to stagger its children, and set `--reveal-offset` on the element to sequence it after earlier content. Theme changes cross-fade through the View Transitions API (`SiteHeader`). Both are skipped under reduced motion; color-only hover transitions stay, since they aren't motion.
 
 ### Fonts
-Fraunces, Newsreader and JetBrains Mono are self-hosted with Astro's Fonts API (`fonts` in `astro.config.mjs`), exposed as `--font-display`, `--font-body` and `--font-mono`. Don't add a Google Fonts `<link>`. Fraunces must keep its `opsz` axis, since headings use `"opsz" 144` via `--dv`.
+Fraunces, Newsreader and JetBrains Mono are committed as trimmed variable `.woff2` files in `src/assets/fonts/` (each folder includes the font's SIL Open Font License, which must stay with the files). Astro's Fonts API serves them through the local provider (`fonts` in `astro.config.mjs`) as `--font-display`, `--font-body` and `--font-mono`, preloads the two roman cuts, and generates metric-matched fallbacks so the swap from fallback to real font causes no layout shift. Don't add a Google Fonts `<link>` or switch back to the Google provider: builds would depend on Google again, and its files are about 25% larger.
+
+`npm run fonts` (`scripts/fonts.mjs`) regenerates the files from the official sources in the google/fonts repo, pinned to one commit. It trims each font to:
+- **Weights the CSS uses:** Fraunces 350–400, Newsreader 400–700, JetBrains Mono 400–500. Using a weight outside these ranges means widening them in the script and in `astro.config.mjs`, then rerunning.
+- **The Latin character set Google serves,** plus arrows.
+- **Fraunces' `opsz` axis is kept,** since headings use `"opsz" 144` via `--dv`.
+- **SOFT and WONK are pinned to their defaults (0 and 1),** exactly as Google served them. The `"SOFT" 50, "WONK" 0` in `--dv` is the design's intent, but it has never rendered. To adopt it, pin `SOFT: 50, WONK: 0` in the script instead; the file size is unchanged.
 
 ### Accessibility
 - Text colors must meet WCAG AA (4.5:1) against the background. `--ink-3` is darker than the original design for this reason.
-- Links inside running text need an underline (`.u`), not just a color change.
+- Links inside running text need an underline (`.u`), not just a color change. Orange is the link color; see the accent rules under Colors.
 - `Plate` requires `alt` whenever it has `src`; `YouTubeEmbed` requires `title`; posts with `heroImage` require `heroImageAlt`.
 
 ### Head, social cards and schema
@@ -300,6 +329,20 @@ Keep comments light: one or two sentences that explain *why*, never a restatemen
 - Use `entry.id` not `entry.slug` for URL generation (glob loader)
 
 ---
+
+## Testing
+
+Three checks, all with plain-language output:
+
+| Check | Tool | When it runs | Locally |
+|---|---|---|---|
+| Type-check | `astro check` | Every build, including Netlify deploys (`build` runs it first, so a type error stops the deploy) | `npm run build` |
+| Accessibility | pa11y-ci with axe rules, WCAG 2 AA | GitHub Actions on every push to `main` and every PR (`.github/workflows/ci.yml`) | `npm run build`, then `npm run serve:dist` in one terminal and `npm run test:a11y` in another |
+| Links | lychee | GitHub Actions on the 1st of each month or on demand; opens an issue if anything's broken (`.github/workflows/links.yml`) | `npm run build && npm run test:links` (needs `brew install lychee`) |
+
+- **Accessibility** tests every page in the sitemap, in light and dark (`THEME=dark`). It runs with reduced motion forced on so the blur-in animation doesn't leave half-faded text for the contrast check to measure, and it sets dark mode through the system preference rather than clicking the toggle, which would measure mid-fade colors. Config: `.pa11yci.cjs`. pa11y-ci runs via `npx` rather than as a dev dependency because it downloads its own Chrome, which would slow every Netlify install.
+- **Links** are checked against the built HTML. LinkedIn (which answers bots with status 999) and the site's own production URLs are excluded; only 2xx responses pass. Config: `lychee.toml`. When lychee reports a redirect, update the link to the final URL.
+- Automated accessibility checks catch roughly a third of real issues. Keyboard and screen-reader passes are still worth doing by hand after layout changes.
 
 ## Commit convention
 
@@ -351,6 +394,8 @@ Everything required is committed: `.husky/commit-msg`, `commitlint.config.js`, a
 | `src/components/ChicagoStars.astro` | Four-star ornament under post headers |
 | `src/components/LogoSprite.astro` | The seal's paths as an SVG `<symbol>`, rendered once per page |
 | `src/components/LogoIcon.astro` | `<use>` reference to the seal, in `currentColor` |
+| `scripts/fonts.mjs` | Downloads and trims the self-hosted fonts into `src/assets/fonts/` |
+| `src/assets/fonts/*/` | Trimmed `.woff2` fonts plus each font's OFL license |
 | `scripts/brand-images.mjs` | Generates favicons, app icons, the share card and web manifest into `public/` |
 | `src/lib/schema.ts` | Schema.org graph builders: WebSite, Person, WebPage, Blog, BlogPosting |
 | `src/components/Plate.astro` | Image or striped placeholder with italic caption |

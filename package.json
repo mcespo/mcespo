@@ -7,13 +7,18 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "astro check && astro build",
     "preview": "astro preview",
     "astro": "astro",
     "prepare": "husky",
     "check-updates": "npm outdated",
     "check": "astro check",
-    "brand-images": "node scripts/brand-images.mjs"
+    "brand-images": "node scripts/brand-images.mjs",
+    "serve:dist": "npx --yes serve@14 dist -l 4400",
+    "a11y": "npx --yes pa11y-ci@4 --sitemap http://localhost:4400/sitemap-0.xml --sitemap-find https://mcespo.com --sitemap-replace http://localhost:4400",
+    "test:a11y": "npm run a11y && THEME=dark npm run a11y",
+    "test:links": "lychee --config lychee.toml --no-progress 'dist/**/*.html'",
+    "fonts": "node scripts/fonts.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^8.1.0",
@@ -29,6 +34,7 @@
     "@commitlint/config-conventional": "^21.2.4",
     "husky": "^9.1.7",
     "sharp": "^0.35.5",
+    "subset-font": "^2.9.0",
     "typescript": "^6.0.3"
   }
 }

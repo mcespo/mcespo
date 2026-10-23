@@ -1,0 +1,216 @@
+:root {
+  --astro-code-foreground:              var(--ink);
+  --astro-code-background:              var(--code-bg);
+  --astro-code-token-comment:           var(--ink-3);
+  --astro-code-token-keyword:           var(--accent);
+  --astro-code-token-string:            var(--ink-2);
+  --astro-code-token-string-expression: var(--ink-2);
+  --astro-code-token-constant:          var(--ink);
+  --astro-code-token-function:          var(--ink);
+  --astro-code-token-parameter:         var(--ink);
+  --astro-code-token-punctuation:       var(--ink-2);
+  --astro-code-token-link:              var(--accent);
+}
+
+/*
+ * Post body, loaded only by the post template so other pages don't ship it.
+ * Flex column so the template's sign-off can sit above the
+ * footnotes Markdown appends last; flex margins don't collapse, so the
+ * space after breakout elements goes on the next sibling.
+ */
+.art {
+  display: flex;
+  flex-direction: column;
+  font-size: var(--text-body);
+  line-height: 1.7;
+
+  & > * + * { margin-block-start: 1.625rem; }
+
+  & > p:first-child::first-letter {
+    font-family: var(--font-display);
+    font-variation-settings: var(--dv);
+    float: inline-start;
+    /* em-based so the drop cap tracks the fluid body size. */
+    font-size: 4.4em;
+    line-height: 0.8;
+    padding-block-start: 0.5rem;
+    padding-inline-end: 0.75rem;
+    color: var(--accent);
+  }
+
+  & h2 {
+    font-size: var(--text-h2);
+    line-height: 1.15;
+    margin-block-start: 3.5rem;
+  }
+
+  & h3 {
+    font-family: var(--font-display);
+    font-variation-settings: var(--dv);
+    font-weight: 400;
+    font-size: var(--text-h3);
+    line-height: 1.2;
+    margin-block-start: 2.5rem;
+    text-wrap: balance;
+  }
+
+  & a {
+    text-decoration: underline;
+    text-decoration-color: var(--accent-2);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.25rem;
+  }
+
+  & :is(ul, ol) {
+    padding-inline-start: 1.4em;
+
+    & li + li { margin-block-start: 0.5em; }
+  }
+  & ul { list-style: disc; }
+  & ol { list-style: decimal; }
+
+  & strong { font-weight: 600; }
+
+  & blockquote {
+    margin-block-start: 3.5rem;
+    margin-inline: -5rem;
+    padding-block: 2rem;
+    border-block: 1px solid var(--ink);
+    font-family: var(--font-display);
+    font-variation-settings: var(--dv);
+    font-size: var(--text-quote);
+    line-height: 1.2;
+    font-weight: 350;
+    text-align: center;
+
+    & p { text-wrap: balance; }
+
+    & cite {
+      display: block;
+      margin-block-start: 1rem;
+      font-family: var(--font-body);
+      font-size: var(--text-meta);
+      font-style: italic;
+      color: var(--ink-3);
+    }
+  }
+  & blockquote + * { margin-block-start: 3.5rem; }
+
+  & pre {
+    font-family: var(--font-mono);
+    background: var(--code-bg);
+    font-size: max(0.875rem, 0.72em);
+    line-height: 1.65;
+    padding: 1.25rem 1.5rem;
+    border-radius: 0.5rem;
+    overflow: auto;
+
+    & code {
+      font-size: inherit;
+      background: none;
+      padding: 0;
+    }
+  }
+
+  & figure {
+    margin-block-start: 3rem;
+    margin-inline: -7.5rem;
+  }
+  & figure + * { margin-block-start: 3rem; }
+
+  & figcaption {
+    font-size: var(--text-meta);
+    font-style: italic;
+    color: var(--ink-2);
+    text-align: center;
+    margin-block-start: 0.75rem;
+  }
+
+  & sup a {
+    color: var(--accent-2-strong);
+    font-weight: 600;
+    font-size: 0.7em;
+    text-decoration: none;
+  }
+
+  & .sign {
+    order: 1;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: var(--text-sign);
+    margin-block-start: 2.5rem;
+  }
+
+  & .footnotes {
+    order: 2;
+    margin-block-start: 4rem;
+    padding-block-start: 1.75rem;
+    border-block-start: 1px solid var(--rule);
+    font-size: var(--text-meta);
+    line-height: 1.6;
+    color: var(--ink-2);
+
+    /* GFM's "Footnotes" heading: kept for screen readers, hidden visually. */
+    & #footnote-label {
+      position: absolute;
+      inline-size: 1px;
+      block-size: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
+    & ol {
+      list-style: none;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.625rem;
+    }
+
+    & li + li { margin-block-start: 0; }
+
+    & li::before {
+      content: counter(list-item);
+      color: var(--accent);
+      font-weight: 700;
+      margin-inline-end: 0.375rem;
+    }
+
+    & li > p { display: inline; }
+
+    & a { text-decoration: none; color: var(--ink-3); }
+  }
+
+  @media (width <= 56.25rem) {
+    & blockquote { margin: 3rem 0 0; }
+    & blockquote + * { margin-block-start: 3rem; }
+    & figure { margin: 2.5rem 0 0; }
+    & figure + * { margin-block-start: 2.5rem; }
+  }
+}
+
+/* Note.astro — matches the note cards in the writing stream. */
+aside.note {
+  background: var(--sticky);
+  color: var(--sticky-ink);
+  border-radius: 0.625rem;
+  padding: 1.5rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  rotate: -0.4deg;
+
+  & .label {
+    font-size: var(--text-meta);
+    font-style: italic;
+    opacity: 0.75;
+  }
+
+  & p {
+    font-size: 0.9em;
+    line-height: 1.6;
+  }
+
+  & code { background: color-mix(in oklch, var(--sticky-ink) 10%, transparent); }
+}

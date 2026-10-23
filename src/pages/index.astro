@@ -17,19 +17,17 @@ const askMe = `mailto:${site.email}?${new URLSearchParams({
 
   .bio {
     --reveal-offset: 340ms;
-    font-size: 1.3125rem;
+    font-size: var(--text-body);
     line-height: 1.7;
 
     & p + p { margin-block-start: 1.625rem; }
-
-    @media (width <= 37.5rem) { font-size: 1.1875rem; }
   }
 
   .sign {
     margin-block-start: 2.5rem;
     font-family: var(--font-display);
     font-style: italic;
-    font-size: 1.875rem;
+    font-size: var(--text-sign);
   }
 </style>
 
@@ -57,9 +55,9 @@ const askMe = `mailto:${site.email}?${new URLSearchParams({
     </p>
     <p>
       Along the way, I’ve volunteered as a designer and webmaster for
-      <a class="u" href="http://a4th.org/">Artists for the Humanities</a> and
+      <a class="u" href="https://a4th.org/">Artists for the Humanities</a> and
       <a class="u" href="https://intersectionchicago.org/">Intersection</a>, and taught with
-      <a class="u" href="https://www.girldevelopit.com/">Girl Develop It Chicago</a>.
+      <a class="u" href="https://girldevelopit.com/">Girl Develop It Chicago</a>.
     </p>
     <p>
       I also shoot photos and video, make wicked-good coffee, and answer to a golden retriever

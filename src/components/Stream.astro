@@ -38,12 +38,10 @@ const rendered = await Promise.all(
     gap: 0.875rem;
 
     & h2 {
-      font-size: 2.375rem;
+      font-size: var(--text-entry);
       line-height: 1.08;
       letter-spacing: -0.015em;
       transition: color .2s;
-
-      @media (width <= 37.5rem) { font-size: 1.875rem; }
     }
 
     /* Stretches the title link over the whole card, so there's one link per post for screen readers. */
@@ -55,18 +53,18 @@ const rendered = await Promise.all(
 
     & h2 a:hover { color: inherit; }
 
-    &:hover h2 { color: var(--accent); }
+    &:hover h2 { color: var(--accent-2-strong); }
   }
 
   .excerpt {
-    font-size: 1.25rem;
+    font-size: var(--text-excerpt);
     line-height: 1.65;
     color: var(--ink-2);
   }
 
   .more {
-    font-size: 1.125rem;
-    color: var(--accent);
+    font-size: var(--text-ui);
+    color: var(--accent-2-strong);
   }
 
   .note-card {
@@ -87,7 +85,7 @@ const rendered = await Promise.all(
   }
 
   .body {
-    font-size: 1.1875rem;
+    font-size: var(--text-excerpt);
     line-height: 1.6;
 
     & :global(p + p) { margin-block-start: 0.75rem; }
@@ -101,7 +99,7 @@ const rendered = await Promise.all(
     gap: 1rem;
     padding-block: 2rem;
     border-block-start: 1px solid var(--rule);
-    font-size: 1.125rem;
+    font-size: var(--text-ui);
 
     & p { color: var(--ink-3); }
 
